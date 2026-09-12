@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#3F6659">
+<meta name="theme-color" content="#26497F">
 <meta name="description" content="Le lezioni di coreano, sempre a portata di mano.">
 <title>Quaderno di coreano</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -14,666 +14,664 @@
 <meta name="apple-mobile-web-app-title" content="Coreano">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#22282A;
-    --ink-soft:#5B615F;
-    --paper:#EDEEE4;
-    --paper-raised:#F6F5EE;
-    --line:#D7D3C3;
-    --celadon:#3F6659;
-    --celadon-soft:#E4EBE6;
-    --brick:#A6503A;
-    --brick-soft:#F3E4DF;
-    --gold:#C99B4A;
-    --serif:'Source Serif 4', Georgia, serif;
-    --sans:'Noto Sans KR', -apple-system, 'Helvetica Neue', Arial, sans-serif;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:var(--paper);
-    color:var(--ink);
-    font-family:var(--serif);
-    font-size:17px;
-    line-height:1.55;
-    -webkit-tap-highlight-color:transparent;
-    padding-bottom:env(safe-area-inset-bottom);
-  }
-  a{color:inherit;}
-  button{font:inherit;color:inherit;}
-  .wrap{max-width:640px;margin:0 auto;padding:0 20px 64px;}
+:root{
+  --bg2:#EFF4FA;--card:#FFFFFF;--glass:rgba(255,255,255,.72);--glassLine:rgba(255,255,255,.9);
+  --glassBar:rgba(245,249,253,.85);--line:rgba(38,73,127,.15);--ink:#15243D;--mute:#5A6B86;
+  --acc:#26497F;--accSoft:#E2EBF7;--hot:#C0392F;--ok:#1F6B57;--okSoft:#E0F1EB;--no:#B5313A;--noSoft:#FAE6E8;
+  --shadow:0 24px 48px -34px rgba(21,36,61,.5);--kr:'Gowun Batang',serif;--ui:'Manrope',system-ui,-apple-system,sans-serif;
+  --radius:22px;
+}
+*{box-sizing:border-box}html,body{margin:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--ui);color:var(--ink);font-size:16px;line-height:1.55;
+ background:radial-gradient(1000px 500px at 92% -10%,#DCE7F6 0%,rgba(220,231,246,0) 62%),radial-gradient(760px 420px at 0% 18%,#E7EEF8 0%,rgba(231,238,248,0) 58%),linear-gradient(#F1F5FB,#FAFCFE);min-height:100vh;-webkit-tap-highlight-color:transparent;
+ padding-bottom:env(safe-area-inset-bottom)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.4;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cg fill='none' stroke='%2326497F' stroke-opacity='.09' stroke-width='1'%3E%3Ccircle cx='60' cy='60' r='34'/%3E%3Ccircle cx='180' cy='150' r='22'/%3E%3Ccircle cx='100' cy='190' r='14'/%3E%3Cpath d='M0 120 Q60 96 120 120 T240 120'/%3E%3C/g%3E%3C/svg%3E")}
+.page{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:0 16px 90px}
+a{color:inherit}button{font:inherit;color:inherit}
 
-  header.top{
-    position:sticky;top:0;z-index:5;
-    background:var(--paper);
-    border-bottom:1px solid var(--line);
-    padding:calc(env(safe-area-inset-top) + 14px) 20px 14px;
-  }
-  header.top .row{max-width:640px;margin:0 auto;display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
-  header.top h1{
-    font-family:var(--sans);font-weight:700;font-size:19px;letter-spacing:.01em;
-    margin:0;
-  }
-  header.top .meta{font-family:var(--sans);font-size:13px;color:var(--ink-soft);}
-  .icon-btn{
-    background:none;border:none;padding:6px;cursor:pointer;color:var(--celadon);
-    display:flex;align-items:center;justify-content:center;
-  }
-  .header-actions{display:flex;align-items:center;gap:2px;flex-shrink:0;}
-  .voice-panel{
-    max-width:640px;margin:0 auto;padding:12px 20px 14px;
-    border-bottom:1px solid var(--line);background:var(--paper-raised);
-    display:none;font-family:var(--sans);
-  }
-  .voice-panel.aperto{display:block;}
-  .voice-panel label{font-size:12.5px;color:var(--ink-soft);display:block;margin-bottom:6px;}
-  .voice-panel select{
-    width:100%;font-family:var(--sans);font-size:15px;padding:8px 10px;
-    border:1px solid var(--line);border-radius:3px;background:var(--paper);color:var(--ink);
-  }
-  .voice-panel .prova{
-    margin-top:8px;background:none;border:1px solid var(--celadon);color:var(--celadon);
-    padding:6px 12px;border-radius:3px;font-size:13.5px;cursor:pointer;
-  }
+header{position:sticky;top:0;z-index:20;margin:0 -16px 0;padding:calc(env(safe-area-inset-top) + 10px) 16px 10px;
+ background:var(--glassBar);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);
+ border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
+header a.back,header button.back{display:inline-flex;align-items:center;gap:6px;color:var(--acc);text-decoration:none;font-weight:600;font-size:14px;background:none;border:none;cursor:pointer;padding:0}
+header a.back svg,header button.back svg{width:16px;height:16px}
+header .htitle{font-family:var(--ui);font-weight:800;font-size:16px}
+header .hb{display:flex;gap:6px}
+.ib{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--acc);display:grid;place-items:center;cursor:pointer;padding:0}
+.ib svg{width:18px;height:18px}
+.ib.on{background:var(--acc);color:#fff;border-color:transparent}
 
-  /* ---- elenco lezioni ---- */
-  .indice{margin-top:8px;}
-  .indice-riga{
-    display:flex;align-items:baseline;gap:14px;
-    padding:16px 0;border-bottom:1px solid var(--line);
-    cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;
-    width:100%;text-align:left;
-  }
-  .indice-num{
-    font-family:var(--sans);font-weight:700;font-size:14px;color:var(--gold);
-    min-width:28px;flex-shrink:0;
-  }
-  .indice-corpo{flex:1;min-width:0;}
-  .indice-titolo{font-size:17px;}
-  .indice-sub{font-family:var(--sans);font-size:12.5px;color:var(--ink-soft);margin-top:3px;}
-  .badge{
-    display:inline-block;font-family:var(--sans);font-size:11px;font-weight:500;
-    padding:2px 8px;border-radius:2px;letter-spacing:.02em;
-  }
-  .badge.gram{background:var(--celadon-soft);color:var(--celadon);}
-  .badge.sit{background:var(--brick-soft);color:var(--brick);}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:30;transform:translateY(101%);transition:transform .28s cubic-bezier(.2,.8,.2,1);
+ background:var(--card);border-radius:24px 24px 0 0;border-top:1px solid var(--line);box-shadow:0 -20px 50px -24px rgba(0,0,0,.35);
+ padding:18px 18px calc(env(safe-area-inset-bottom) + 22px);max-width:760px;margin:0 auto}
+.sheet.open{transform:translateY(0)}
+.sheet .grip{width:42px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 14px}
+.sheet h3{margin:0 0 4px;font-size:17px}
+.sheet p{margin:0 0 14px;font-size:13.5px;color:var(--mute)}
+.sheet select{width:100%;font:inherit;font-size:15px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--bg2);color:var(--ink)}
+.sheet .row{display:flex;gap:8px;margin-top:12px}
+.scrim{position:fixed;inset:0;background:rgba(20,30,26,.28);z-index:29;opacity:0;pointer-events:none;transition:opacity .28s}
+.scrim.open{opacity:1;pointer-events:auto}
 
-  .stato-msg{font-family:var(--sans);color:var(--ink-soft);padding:40px 0;text-align:center;font-size:14.5px;}
-  .stato-msg button{
-    margin-top:14px;background:var(--celadon);color:var(--paper-raised);border:none;
-    padding:9px 18px;border-radius:3px;font-family:var(--sans);font-size:14px;cursor:pointer;
-  }
+.hero{padding:22px 0 4px}
+.meta{display:flex;align-items:baseline;gap:10px;color:var(--mute);font-size:13px;flex-wrap:wrap}
+.meta b{font-size:34px;font-weight:800;color:var(--ink);letter-spacing:-.03em;line-height:1}
+.tag{font-size:12px;font-weight:700;color:var(--acc);background:var(--accSoft);padding:4px 10px;border-radius:999px}
+h1{font-family:var(--kr);font-weight:700;font-size:clamp(30px,8vw,48px);line-height:1.1;margin:10px 0 6px;letter-spacing:-.01em}
+.hero p{margin:0;color:var(--mute);max-width:44ch}
 
-  /* ---- vista lezione ---- */
-  .torna{
-    display:inline-flex;align-items:center;gap:6px;background:none;border:none;
-    font-family:var(--sans);font-size:14px;color:var(--celadon);cursor:pointer;
-    padding:16px 0 4px;
-  }
-  .lez-head{padding:6px 0 18px;}
-  .lez-head h2{font-size:23px;margin:2px 0 4px;line-height:1.3;}
-  .lez-head .sub{font-family:var(--sans);font-size:13px;color:var(--ink-soft);display:flex;gap:8px;align-items:center;}
+nav.jump{position:sticky;top:calc(env(safe-area-inset-top) + 59px);z-index:15;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;
+ margin:0 -16px 22px;padding:8px 16px;background:var(--glassBar);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+nav.jump::-webkit-scrollbar{display:none}
+nav.jump a{white-space:nowrap;font-size:13px;font-weight:600;text-decoration:none;color:var(--acc);background:var(--accSoft);padding:6px 12px;border-radius:999px}
 
-  section.blocco{padding:22px 0;border-top:1px solid var(--line);}
-  section.blocco > .etichetta{
-    font-family:var(--sans);font-size:12.5px;font-weight:700;color:var(--celadon);
-    letter-spacing:.03em;margin-bottom:12px;
-  }
+section{margin:0 0 30px;scroll-margin-top:112px}
+.card{background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--glassLine);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.sh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 14px}
+.sh h2{margin:0;font-size:19px;font-weight:800;letter-spacing:-.015em}
+.sh small{color:var(--mute);font-size:12.5px}
 
-  .voce{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px dashed var(--line);}
-  .voce:last-child{border-bottom:none;}
-  .voce .ko{font-family:var(--sans);font-size:17px;}
-  .voce .it{color:var(--ink-soft);font-size:15px;text-align:right;}
-  .speak-mini{background:none;border:none;color:var(--celadon);padding:0 0 0 10px;cursor:pointer;flex-shrink:0;}
+.voc{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px}
+.v{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 12px 11px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.v:active{transform:scale(.98)}
+.v .ko{font-family:var(--kr);font-size:24px;line-height:1.15;display:block}
+.v .it{display:block;font-size:12.5px;color:var(--mute);margin-top:5px;line-height:1.35}
+.v .sp{position:absolute;top:9px;right:9px;width:20px;height:20px;border-radius:50%;background:var(--accSoft);color:var(--acc);display:grid;place-items:center}
+.v .sp svg{width:11px;height:11px}
+.v.play{border-color:var(--acc)}.v.play .sp{background:var(--acc);color:#fff}
 
-  .gram-punto{padding:8px 0;font-size:15.5px;}
-  .gram-punto::before{content:"—  ";color:var(--gold);}
+.fr{display:grid;gap:8px}
+.fr button{width:100%;font:inherit;color:inherit;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 13px;cursor:pointer;display:flex;align-items:center;gap:10px}
+.fr .ko{font-family:var(--kr);font-size:19px;flex:1;line-height:1.3}
+.fr .it{font-size:12.5px;color:var(--mute);text-align:right;max-width:42%}
 
-  .dialogo{display:flex;flex-direction:column;gap:10px;}
-  .battuta{max-width:82%;padding:10px 13px;border-radius:3px;cursor:pointer;}
-  .battuta .chi{font-family:var(--sans);font-size:11px;color:var(--ink-soft);margin-bottom:3px;}
-  .battuta .ko{font-family:var(--sans);font-size:16px;}
-  .battuta .it{font-size:14px;color:var(--ink-soft);margin-top:3px;}
-  .battuta.studente{align-self:flex-end;background:var(--celadon-soft);text-align:right;}
-  .battuta.altro{align-self:flex-start;background:var(--paper-raised);border:1px solid var(--line);}
+.gp{padding:16px 0;border-top:1px solid var(--line)}
+.gp:first-child{border-top:none;padding-top:0}
+.gp p.reg{margin:0;font-size:16px;line-height:1.65}
+.gp p.reg b{font-family:var(--kr);font-weight:700;color:var(--acc)}
+.gp .ex{margin-top:12px;background:var(--accSoft);border-left:3px solid var(--acc);border-radius:0 12px 12px 0;padding:11px 13px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.gp .ex .t{flex:1}
+.gp .ex .ko{font-family:var(--kr);font-size:20px;line-height:1.3}
+.gp .ex .it{font-size:13px;color:var(--mute)}
+.gp .ex .sp{width:30px;height:30px;border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;flex:none}
+.gp .ex .sp svg{width:14px;height:14px}
+.gp .pron{margin:10px 0 0;font-size:13.5px;color:var(--mute);line-height:1.6}
+.gp .pron b{font-family:var(--kr);color:var(--ink);font-weight:700}
 
-  .flash-card{
-    background:var(--paper-raised);border:1px solid var(--line);border-radius:4px;
-    padding:34px 20px;text-align:center;cursor:pointer;min-height:120px;
-    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;
-  }
-  .flash-card .ko{font-family:var(--sans);font-size:26px;}
-  .flash-card .it{color:var(--ink-soft);font-size:16px;}
-  .flash-nav{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-family:var(--sans);}
-  .flash-nav .cnt{font-size:13px;color:var(--ink-soft);}
-  .flash-nav button{background:none;border:1px solid var(--line);border-radius:3px;padding:7px 14px;cursor:pointer;}
+.dia{display:flex;flex-direction:column;gap:9px}
+.b{max-width:88%;display:flex;flex-direction:column;gap:1px;padding:10px 14px;border-radius:18px;cursor:pointer;border:1px solid var(--line);background:var(--card);font:inherit;text-align:left;color:inherit}
+.b.altro{align-self:flex-start;border-bottom-left-radius:6px}
+.b.studente{align-self:flex-end;background:var(--accSoft);border-color:transparent;border-bottom-right-radius:6px}
+.b .chi{font-size:11px;font-weight:700;color:var(--mute)}
+.b .ko{font-family:var(--kr);font-size:19px;line-height:1.35}
+.b .it{font-size:12.5px;color:var(--mute)}
+.b.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--accSoft)}
+.dia.noit .it{display:none}
 
-  .es{padding:16px 0;border-bottom:1px dashed var(--line);}
-  .es:last-child{border-bottom:none;}
-  .es .consegna{font-size:16px;margin-bottom:10px;}
-  .es .frase-errata{
-    font-family:var(--sans);background:var(--brick-soft);color:var(--brick);
-    padding:8px 12px;border-radius:3px;margin-bottom:10px;font-size:15.5px;
-  }
-  .opzioni{display:flex;flex-direction:column;gap:8px;}
-  .opzione{
-    font-family:var(--sans);text-align:left;background:var(--paper-raised);
-    border:1px solid var(--line);border-radius:3px;padding:10px 13px;cursor:pointer;font-size:15px;
-  }
-  .opzione.corretta{background:var(--celadon-soft);border-color:var(--celadon);}
-  .opzione.sbagliata{background:var(--brick-soft);border-color:var(--brick);}
-  .opzione:disabled{cursor:default;}
-  .mostra-btn{
-    font-family:var(--sans);background:none;border:1px solid var(--celadon);color:var(--celadon);
-    padding:8px 14px;border-radius:3px;cursor:pointer;font-size:14px;
-  }
-  .risposta-box{margin-top:10px;padding:10px 13px;background:var(--celadon-soft);border-radius:3px;}
-  .risposta-box .ko{font-family:var(--sans);font-size:16px;margin-bottom:4px;}
-  .spiegazione{font-size:14px;color:var(--ink-soft);margin-top:6px;}
+.btn{font:inherit;font-weight:700;font-size:14px;color:#fff;background:var(--acc);border:none;border-radius:999px;padding:10px 16px;cursor:pointer}
+.btn.o{background:var(--card);color:var(--acc);border:1px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:default}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 
-  .vuoto-blocco{font-family:var(--sans);font-size:13.5px;color:var(--ink-soft);font-style:normal;}
+.flash{perspective:1200px;height:180px}
+.fc{position:relative;width:100%;height:100%;transition:transform .5s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d;cursor:pointer}
+.fc.f{transform:rotateY(180deg)}
+.fc>div{position:absolute;inset:0;border-radius:20px;display:grid;place-items:center;text-align:center;padding:18px;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.fc .front{background:var(--card);border:1px solid var(--line);font-family:var(--kr);font-size:clamp(24px,6vw,36px);line-height:1.3}
+.fc .back{background:var(--acc);color:#fff;transform:rotateY(180deg);font-size:19px;font-weight:600}
+.fnav{display:flex;align-items:center;gap:10px;margin-top:12px}
+.fnav .bar{flex:1;height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.fnav .bar i{display:block;height:100%;background:var(--acc);transition:width .3s}
+.fnav .cnt{font-size:12.5px;color:var(--mute);min-width:52px;text-align:center}
+
+.seg{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{font:inherit;font-size:13px;font-weight:600;white-space:nowrap;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:999px;padding:7px 13px;cursor:pointer}
+.seg button.on{background:var(--acc);color:#fff;border-color:transparent}
+.es{padding:16px 0;border-top:1px solid var(--line)}
+.es:first-child{border-top:none;padding-top:0}
+.es .cons{font-size:15.5px;line-height:1.55}
+.es .cons i{font-style:normal;color:var(--mute);font-weight:700;margin-right:6px}
+.es .frase{font-family:var(--kr);font-size:21px;margin-top:8px;background:var(--bg2);border-radius:12px;padding:10px 12px}
+.opz{display:grid;gap:7px;margin-top:11px}
+.opz button{font:inherit;font-family:var(--kr);font-size:18px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 14px;cursor:pointer;color:var(--ink)}
+.opz button.ok{background:var(--okSoft);border-color:var(--ok);color:var(--ok)}
+.opz button.no{background:var(--noSoft);border-color:var(--no);color:var(--no)}
+.opz button:disabled{cursor:default}
+.esito{margin-top:10px;font-size:14px;line-height:1.55;border-radius:12px;padding:10px 12px}
+.esito.ok{background:var(--okSoft);color:var(--ok)}
+.esito.no{background:var(--noSoft);color:var(--no)}
+.risp{margin-top:11px;background:var(--accSoft);border-radius:13px;padding:11px 13px;display:flex;gap:10px;align-items:center}
+.risp .t{flex:1}
+.risp .ko{font-family:var(--kr);font-size:20px}
+.risp .it{font-size:13px;color:var(--mute);margin-top:3px}
+.risp .sp{width:30px;height:30px;border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;flex:none;border:none;cursor:pointer}
+.risp .sp svg{width:14px;height:14px}
+.giud{display:flex;gap:8px;margin-top:10px}
+.score{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--mute)}
+.score b{color:var(--ink);font-size:22px;font-weight:800;letter-spacing:-.02em}
+.vuoto{font-size:13.5px;color:var(--mute)}
+
+.mazzo-riga{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)}
+.mazzo-riga:last-child{border-bottom:none}
+.mazzo-riga .num{font-size:12px;color:var(--mute);min-width:20px;font-weight:700}
+.mazzo-riga .ko{font-family:var(--kr);font-size:18px;flex:1}
+.mazzo-riga .it{font-size:12.5px;color:var(--mute)}
+.flag{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--mute);display:grid;place-items:center;cursor:pointer;flex:none}
+.flag.on{background:var(--no);border-color:var(--no);color:#fff}
+.errori-box{margin-top:14px;background:var(--bg2);border-radius:14px;padding:12px 14px}
+.errori-box code{display:block;font-family:ui-monospace,monospace;font-size:14px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin:8px 0;word-break:break-all}
+
+.elenco-riga{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);padding:15px 0;cursor:pointer}
+.elenco-riga:last-child{border-bottom:none}
+.elenco-num{font-family:var(--ui);font-weight:800;font-size:13px;color:var(--acc);background:var(--accSoft);min-width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none}
+.elenco-corpo{flex:1;min-width:0}
+.elenco-titolo{font-size:16px;font-weight:600}
+.elenco-sub{font-size:12.5px;color:var(--mute);margin-top:3px}
+.elenco-chev{color:var(--mute);flex:none}
+
+.riep-riga{padding:7px 0;font-size:14.5px;line-height:1.6}
+.riep-riga.barra{font-family:ui-monospace,monospace;font-size:13px;color:var(--acc);white-space:pre}
+
+footer{text-align:center;color:var(--mute);font-size:12.5px;padding:18px 0 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (min-width:720px){.page{padding:0 24px 100px}.voc{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
 </style>
 </head>
 <body>
-<header class="top">
-  <div class="row">
-    <h1 id="titolo-header">Quaderno di coreano</h1>
-    <div class="header-actions">
-      <button class="icon-btn" id="btn-voce" title="Voce" aria-label="Scegli la voce">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M19 5a13 13 0 0 1 0 14M15.5 8.5a7 7 0 0 1 0 7"/></svg>
-      </button>
-      <button class="icon-btn" id="btn-refresh" title="Aggiorna" aria-label="Aggiorna">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v6h-6"/></svg>
-      </button>
-    </div>
+<header>
+  <button class="back" id="btn-back" style="visibility:hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 5l-7 7 7 7"/></svg><span id="back-label">Indietro</span></button>
+  <span class="htitle" id="htitle">Quaderno di coreano</span>
+  <div class="hb">
+    <button class="ib" id="btn-voce" aria-label="Scegli la voce coreana"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9v6h4l5 4V5L8 9H4zM17 8a5 5 0 010 8"/></svg></button>
+    <button class="ib" id="btn-stop" aria-label="Ferma l'audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg></button>
+    <button class="ib" id="btn-refresh" aria-label="Aggiorna"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v6h-6"/></svg></button>
   </div>
 </header>
-<div class="voice-panel" id="voice-panel">
-  <label for="voice-select">Voce per il coreano</label>
-  <select id="voice-select"></select>
-  <button class="prova" id="voice-prova">Prova voce · 안녕하세요</button>
+
+<div class="page" id="app"></div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-label="Voce coreana">
+  <div class="grip"></div>
+  <h3>Voce coreana</h3>
+  <p id="voce-nota">Scegli quale voce usare per l'ascolto. Resta salvata sul telefono.</p>
+  <select id="voce-sel"></select>
+  <div class="row"><button class="btn" id="voce-prova">Prova · 안녕하세요</button><button class="btn o" id="voce-chiudi">Chiudi</button></div>
 </div>
-<div class="wrap" id="app"></div>
 
 <script>
 const SUPABASE_URL = "https://zhmdzumtvqlirbcnsciz.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpobWR6dW10dnFsaXJiY25zY2l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyOTgzODgsImV4cCI6MjA5Njg3NDM4OH0.Q8WdBKE0NZ086VQJgONUvqgNAiIf_koG2OMOlK4PcJk";
 
-let lezioni = null; // cache in memoria per la sessione
-let voci = [];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SP='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 9v6h4l5 4V5L8 9H4zM16 8a5 5 0 010 8"/></svg>';
 
-function nomeVoicePreferita() { return localStorage.getItem("voce_ko") || ""; }
-
-function popolaVoci() {
-  voci = speechSynthesis.getVoices();
-  const sel = document.getElementById("voice-select");
-  if (!sel) return;
-  const preferita = nomeVoicePreferita();
-  // ko-KR/ko-* prima, poi tutte le altre (utile se una voce coreana di terze parti
-  // compare sotto un'altra lingua di sistema)
-  const ordinate = [...voci].sort((a, b) => {
-    const ak = a.lang && a.lang.startsWith("ko") ? 0 : 1;
-    const bk = b.lang && b.lang.startsWith("ko") ? 0 : 1;
-    return ak - bk;
-  });
-  sel.innerHTML = `<option value="">Automatica (prima voce coreana disponibile)</option>` +
-    ordinate.map(v => `<option value="${escapeHtml(v.name)}" ${v.name === preferita ? "selected" : ""}>${escapeHtml(v.name)} — ${escapeHtml(v.lang)}</option>`).join("");
+function dataItaliana(iso){
+  if(!iso) return "";
+  const d=new Date(iso+"T00:00:00");
+  return d.toLocaleDateString("it-IT",{day:"numeric",month:"long",year:"numeric"});
 }
 
-if ("speechSynthesis" in window) {
-  popolaVoci();
-  speechSynthesis.onvoiceschanged = popolaVoci;
+/* ---------- voce ---------- */
+let vociKo=[],voceKo=null;
+const punteggio=v=>{const n=(v.name||'').toLowerCase();let p=0;
+ if(/premium|enhanced|neural|natural|wavenet|siri/.test(n))p+=40;
+ if(/yuna|sora|sunhi|seoyeon|jihun|heami|google/.test(n))p+=20;
+ if(/compact|eloquence|espeak/.test(n))p-=30;
+ if(v.localService)p+=5;return p;};
+function trovaVoci(){
+  if(!('speechSynthesis' in window))return;
+  vociKo=speechSynthesis.getVoices().filter(v=>(v.lang||'').toLowerCase().replace('_','-').startsWith('ko')).sort((a,b)=>punteggio(b)-punteggio(a));
+  let salvata=null;try{salvata=localStorage.getItem('voceKo')}catch(e){}
+  voceKo=vociKo.find(v=>v.name===salvata)||vociKo[0]||null;
+  const sel=document.getElementById('voce-sel');if(!sel)return;sel.innerHTML='';
+  if(!vociKo.length){sel.innerHTML='<option>Nessuna voce coreana installata</option>';sel.disabled=true;
+    document.getElementById('voce-nota').textContent='Nessuna voce coreana trovata sul telefono. Aggiungila nelle impostazioni vocali, poi riapri qui.';return;}
+  sel.disabled=false;document.getElementById('voce-nota').textContent="Scegli quale voce usare per l'ascolto. Resta salvata sul telefono.";
+  vociKo.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=v.name+(v.localService?'':' (online)');if(voceKo&&v.name===voceKo.name)o.selected=true;sel.appendChild(o);});
 }
-
-function parla(testo) {
-  if (!("speechSynthesis" in window)) return;
+if('speechSynthesis' in window){trovaVoci();speechSynthesis.onvoiceschanged=trovaVoci;}
+function parla(t,cb){
+  if(!('speechSynthesis' in window))return;
+  if(!vociKo.length)trovaVoci();
   speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(testo);
-  u.lang = "ko-KR";
-  const preferita = nomeVoicePreferita();
-  const voceScelta = preferita && voci.find(v => v.name === preferita);
-  const voceKo = voceScelta || voci.find(v => v.lang === "ko-KR") || voci.find(v => v.lang && v.lang.startsWith("ko"));
-  if (voceKo) u.voice = voceKo;
+  const u=new SpeechSynthesisUtterance(t);u.lang='ko-KR';u.rate=.9;u.pitch=1.05;
+  if(voceKo)u.voice=voceKo;
+  if(cb)u.onend=cb;
   speechSynthesis.speak(u);
 }
+const sheet=document.getElementById('sheet'),scrim=document.getElementById('scrim');
+const apriSheet=v=>{sheet.classList.toggle('open',v);scrim.classList.toggle('open',v);document.getElementById('btn-voce').classList.toggle('on',v);if(v)trovaVoci();};
+document.getElementById('btn-voce').onclick=()=>apriSheet(!sheet.classList.contains('open'));
+scrim.onclick=()=>apriSheet(false);
+document.getElementById('voce-chiudi').onclick=()=>apriSheet(false);
+document.getElementById('voce-sel').onchange=e=>{voceKo=vociKo.find(v=>v.name===e.target.value)||voceKo;try{localStorage.setItem('voceKo',e.target.value)}catch(err){}parla('안녕하세요');};
+document.getElementById('voce-prova').onclick=()=>parla('안녕하세요');
+document.getElementById('btn-stop').onclick=()=>{if('speechSynthesis' in window)speechSynthesis.cancel();};
 
-async function caricaLezioni(forza) {
-  if (lezioni && !forza) return lezioni;
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/lezioni?select=numero,data,tipo,titolo,contenuto,esercizi,recall,riepilogo&order=numero.desc`,
-    { headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-        "Accept-Profile": "coreano"
-      } }
-  );
-  if (!res.ok) throw new Error(String(res.status));
-  lezioni = await res.json();
-  return lezioni;
+/* ---------- dati ---------- */
+let lezioni=null;
+async function caricaLezioni(forza){
+  if(lezioni && !forza) return lezioni;
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/lezioni?select=numero,data,tipo,titolo,contenuto,esercizi,recall,riepilogo&order=numero.desc`,
+    {headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${SUPABASE_ANON_KEY}`,"Accept-Profile":"coreano"}});
+  if(!res.ok) throw new Error(String(res.status));
+  lezioni=await res.json();return lezioni;
+}
+let ripassi=null;
+async function caricaRipassi(forza){
+  if(ripassi && !forza) return ripassi;
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/ripassi?select=id,data,da_lezione,a_lezione,deck,contenuto&order=data.desc,id.desc`,
+    {headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${SUPABASE_ANON_KEY}`,"Accept-Profile":"coreano"}});
+  if(!res.ok) throw new Error(String(res.status));
+  ripassi=await res.json();return ripassi;
 }
 
-let ripassi = null;
-async function caricaRipassi(forza) {
-  if (ripassi && !forza) return ripassi;
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/ripassi?select=id,data,da_lezione,a_lezione,deck,contenuto&order=data.desc,id.desc`,
-    { headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-        "Accept-Profile": "coreano"
-      } }
-  );
-  if (!res.ok) throw new Error(String(res.status));
-  ripassi = await res.json();
-  return ripassi;
+/* ---------- routing ---------- */
+function currentRoute(){
+  const h=location.hash.replace(/^#\/?/,"");
+  if(h.startsWith("lezione/")) return {view:"lezione",numero:parseInt(h.split("/")[1],10)};
+  if(h==="ripassi") return {view:"ripassi"};
+  if(h.startsWith("ripasso/")) return {view:"ripasso",id:parseInt(h.split("/")[1],10)};
+  return {view:"elenco"};
+}
+function setHeader(back, label, title){
+  const b=document.getElementById('btn-back');
+  b.style.visibility = back ? 'visible' : 'hidden';
+  document.getElementById('back-label').textContent = label || '';
+  document.getElementById('htitle').textContent = title || 'Quaderno di coreano';
+  b.onclick = back || null;
 }
 
-function escapeHtml(s) {
-  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-}
-
-function dataItaliana(iso) {
-  if (!iso) return "";
-  const d = new Date(iso + "T00:00:00");
-  return d.toLocaleDateString("it-IT", { day:"numeric", month:"long", year:"numeric" });
-}
-
-/* ---------------- ROUTING ---------------- */
-
-function currentRoute() {
-  const h = location.hash.replace(/^#\/?/, "");
-  if (h.startsWith("lezione/")) return { view: "lezione", numero: parseInt(h.split("/")[1], 10) };
-  if (h === "ripassi") return { view: "ripassi" };
-  if (h.startsWith("ripasso/")) return { view: "ripasso", id: parseInt(h.split("/")[1], 10) };
-  return { view: "elenco" };
-}
-
-async function render() {
-  const app = document.getElementById("app");
-  const header = document.getElementById("titolo-header");
-  const route = currentRoute();
-  try {
-    if (route.view === "elenco") {
-      const dati = await caricaLezioni(false);
-      header.textContent = "Quaderno di coreano";
-      app.innerHTML = renderElenco(dati);
-      attachElencoHandlers(dati);
-    } else if (route.view === "lezione") {
-      const dati = await caricaLezioni(false);
-      const lez = dati.find(l => l.numero === route.numero);
-      if (!lez) { app.innerHTML = `<div class="stato-msg">Lezione non trovata.</div>`; return; }
-      header.textContent = `Lezione ${lez.numero}`;
-      app.innerHTML = renderLezione(lez);
+async function render(){
+  const app=document.getElementById('app');
+  const route=currentRoute();
+  try{
+    if(route.view==="elenco"){
+      const dati=await caricaLezioni(false);
+      setHeader(null,'','Quaderno di coreano');
+      app.innerHTML=renderElenco(dati);
+      attachElencoHandlers();
+    } else if(route.view==="lezione"){
+      const dati=await caricaLezioni(false);
+      const lez=dati.find(l=>l.numero===route.numero);
+      if(!lez){app.innerHTML=`<div class="card vuoto">Lezione non trovata.</div>`;return;}
+      setHeader(()=>{location.hash="#/"},'Lezioni',`Lezione ${lez.numero}`);
+      app.innerHTML=renderLezione(lez);
       attachLezioneHandlers(lez);
-    } else if (route.view === "ripassi") {
-      const dati = await caricaRipassi(false);
-      header.textContent = "Ripassi generali";
-      app.innerHTML = renderElencoRipassi(dati);
+    } else if(route.view==="ripassi"){
+      const dati=await caricaRipassi(false);
+      setHeader(()=>{location.hash="#/"},'Lezioni','Ripassi generali');
+      app.innerHTML=renderElencoRipassi(dati);
       attachElencoRipassiHandlers();
-    } else if (route.view === "ripasso") {
-      const dati = await caricaRipassi(false);
-      const r = dati.find(x => x.id === route.id);
-      if (!r) { app.innerHTML = `<div class="stato-msg">Ripasso non trovato.</div>`; return; }
-      header.textContent = `Ripasso · ${dataItaliana(r.data)}`;
-      app.innerHTML = renderRipasso(r);
+    } else if(route.view==="ripasso"){
+      const dati=await caricaRipassi(false);
+      const r=dati.find(x=>x.id===route.id);
+      if(!r){app.innerHTML=`<div class="card vuoto">Ripasso non trovato.</div>`;return;}
+      setHeader(()=>{location.hash="#/ripassi"},'Ripassi',`Ripasso · ${dataItaliana(r.data)}`);
+      app.innerHTML=renderRipasso(r);
       attachRipassoHandlers(r);
     }
-  } catch (e) {
-    app.innerHTML = `
-      <div class="stato-msg">
-        Non riesco a raggiungere il quaderno.<br>Controlla la connessione e riprova.
-        <br><button id="btn-riprova">Riprova</button>
-      </div>`;
-    document.getElementById("btn-riprova")?.addEventListener("click", () => render());
+    window.scrollTo(0,0);
+  }catch(e){
+    app.innerHTML=`<div class="card vuoto">Non riesco a raggiungere il quaderno.<br>Controlla la connessione e riprova.
+      <div class="btnrow"><button class="btn" id="btn-riprova">Riprova</button></div></div>`;
+    document.getElementById('btn-riprova')?.addEventListener('click',()=>render());
   }
 }
 
-/* ---------------- ELENCO ---------------- */
-
-function renderElenco(dati) {
-  const link = `<button class="torna" id="btn-ripassi" style="padding:16px 0 8px">Ripassi generali →</button>`;
-  if (!dati.length) return link + `<div class="stato-msg">Nessuna lezione salvata ancora.</div>`;
-  const righe = dati.map(l => `
-    <button class="indice-riga" data-num="${l.numero}">
-      <span class="indice-num">${l.numero}</span>
-      <span class="indice-corpo">
-        <span class="indice-titolo">${escapeHtml(l.titolo)}</span>
-        <div class="indice-sub">
-          <span class="badge ${l.tipo === "GRAMMATICA" ? "gram" : "sit"}">${l.tipo === "GRAMMATICA" ? "Grammatica" : "Situazione"}</span>
-          &nbsp;·&nbsp;${dataItaliana(l.data)}
-        </div>
+/* ---------- ELENCO ---------- */
+function renderElenco(dati){
+  const link=`<div class="hero"><div class="meta"><span class="tag">Percorso</span></div><h1>매일<br>한국어 공부</h1><p>Le tue lezioni di coreano, in ordine. Tocca per rivederle quando vuoi.</p></div>
+    <div class="btnrow" style="margin-bottom:18px"><button class="btn o" id="btn-ripassi">Ripassi generali →</button></div>`;
+  if(!dati.length) return link+`<div class="card vuoto">Nessuna lezione salvata ancora.</div>`;
+  const righe=dati.map(l=>`
+    <button class="elenco-riga" data-num="${l.numero}">
+      <span class="elenco-num">${l.numero}</span>
+      <span class="elenco-corpo">
+        <span class="elenco-titolo">${esc(l.titolo)}</span>
+        <div class="elenco-sub"><span class="tag" style="font-size:10.5px;padding:2px 8px">${l.tipo==='GRAMMATICA'?'Grammatica':'Situazione'}</span> &nbsp;${dataItaliana(l.data)}</div>
       </span>
+      <span class="elenco-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
     </button>`).join("");
-  return link + `<div class="indice">${righe}</div>`;
+  return link+`<div class="card">${righe}</div>`;
+}
+function attachElencoHandlers(){
+  document.querySelectorAll(".elenco-riga").forEach(el=>{el.addEventListener("click",()=>{location.hash=`#/lezione/${el.dataset.num}`;});});
+  document.getElementById("btn-ripassi")?.addEventListener("click",()=>{location.hash="#/ripassi";});
 }
 
-function attachElencoHandlers() {
-  document.querySelectorAll(".indice-riga").forEach(el => {
-    el.addEventListener("click", () => { location.hash = `#/lezione/${el.dataset.num}`; });
-  });
-  document.getElementById("btn-ripassi")?.addEventListener("click", () => { location.hash = "#/ripassi"; });
-}
-
-/* ---------------- ELENCO RIPASSI ---------------- */
-
-function renderElencoRipassi(dati) {
-  const torna = `<button class="torna" id="btn-torna">← Tutte le lezioni</button>`;
-  if (!dati.length) return torna + `<div class="stato-msg">Nessun ripasso generale ancora.</div>`;
-  const righe = dati.map(r => `
-    <button class="indice-riga" data-id="${r.id}">
-      <span class="indice-corpo">
-        <span class="indice-titolo">Lezioni ${r.da_lezione}–${r.a_lezione}</span>
-        <div class="indice-sub">${dataItaliana(r.data)}</div>
+/* ---------- ELENCO RIPASSI ---------- */
+function renderElencoRipassi(dati){
+  if(!dati.length) return `<div class="hero"><h1>복습</h1><p>Nessun ripasso generale ancora.</p></div>`;
+  const righe=dati.map(r=>`
+    <button class="elenco-riga" data-id="${r.id}">
+      <span class="elenco-corpo">
+        <span class="elenco-titolo">Lezioni ${r.da_lezione}–${r.a_lezione}</span>
+        <div class="elenco-sub">${dataItaliana(r.data)}</div>
       </span>
+      <span class="elenco-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
     </button>`).join("");
-  return torna + `<div class="indice">${righe}</div>`;
+  return `<div class="hero"><h1>복습</h1><p>Tutti i ripassi generali del 1° e del 15° di ogni mese.</p></div><div class="card">${righe}</div>`;
+}
+function attachElencoRipassiHandlers(){
+  document.querySelectorAll(".elenco-riga").forEach(el=>{el.addEventListener("click",()=>{location.hash=`#/ripasso/${el.dataset.id}`;});});
 }
 
-function attachElencoRipassiHandlers() {
-  document.getElementById("btn-torna").addEventListener("click", () => { location.hash = "#/"; });
-  document.querySelectorAll(".indice-riga").forEach(el => {
-    el.addEventListener("click", () => { location.hash = `#/ripasso/${el.dataset.id}`; });
-  });
-}
-
-/* ---------------- LEZIONE ---------------- */
-
-function renderLezione(lez) {
-  const c = lez.contenuto || {};
-  const vocaboli = c.vocaboli || [];
-  const frasi = c.frasi || [];
-  const grammatica = c.grammatica || [];
-  const dialogo = c.dialogo || [];
-  const esercizi = lez.esercizi || [];
-  const recall = lez.recall || {};
-  const riepilogo = lez.riepilogo || [];
-
-  const mazzo = [...vocaboli, ...frasi];
-
-  const bloccoRecall = (chiave) => {
-    const r = recall[chiave];
-    if (!r) return "";
-    const mazzoR30 = (r.mazzo || []).length ? `
-      ${r.mazzo.map(v => `
-        <div class="voce">
-          <button class="speak-mini" data-speak="${escapeHtml(v.ko)}" aria-label="Ascolta">🔊</button>
-          <span class="indice-num" style="min-width:22px">${v.card_n}</span>
-          <span class="ko" style="flex:1">${escapeHtml(v.ko)}</span>
-          <span class="it">${escapeHtml(v.it)}</span>
-        </div>`).join("")}
-      <div class="vuoto-blocco" style="margin-top:8px">Per riferire gli errori: "ERRORI ripasso 30: 2, 7" (i numeri qui sopra).</div>` : "";
-    return `
-    <section class="blocco">
-      <div class="etichetta">Recall — Lezione ${r.lezione_numero}${r.titolo ? " · " + escapeHtml(r.titolo) : ""}</div>
-      ${mazzoR30}
-      ${renderBloccoEsercizi(r.esercizi || [], `${chiave}`)}
-    </section>`;
-  };
-
-  return `
-    <button class="torna" id="btn-torna">← Tutte le lezioni</button>
-    <div class="lez-head">
-      <div class="sub">
-        <span class="badge ${lez.tipo === "GRAMMATICA" ? "gram" : "sit"}">${lez.tipo === "GRAMMATICA" ? "Grammatica" : "Situazione"}</span>
-        ${dataItaliana(lez.data)}
-      </div>
-      <h2>${escapeHtml(lez.titolo)}</h2>
-    </div>
-
-    ${vocaboli.length ? `
-    <section class="blocco">
-      <div class="etichetta">Vocabolario base</div>
-      ${vocaboli.map(v => rigaVoce(v)).join("")}
-    </section>` : ""}
-
-    ${frasi.length ? `
-    <section class="blocco">
-      <div class="etichetta">Frasi comuni</div>
-      ${frasi.map(v => rigaVoce(v)).join("")}
-    </section>` : ""}
-
-    ${grammatica.length ? `
-    <section class="blocco">
-      <div class="etichetta">Grammatica e particolarità</div>
-      ${grammatica.map(p => `<div class="gram-punto">${escapeHtml(p)}</div>`).join("")}
-    </section>` : ""}
-
-    ${dialogo.length ? `
-    <section class="blocco">
-      <div class="etichetta">Dialogo</div>
-      <div class="dialogo">
-        ${dialogo.map(b => `
-          <div class="battuta ${b.chi === "studente" ? "studente" : "altro"}" data-speak="${escapeHtml(b.ko)}">
-            <div class="chi">${escapeHtml(b.chi)}</div>
-            <div class="ko">${escapeHtml(b.ko)}</div>
-            <div class="it">${escapeHtml(b.it)}</div>
-          </div>`).join("")}
-      </div>
-    </section>` : ""}
-
-    ${mazzo.length ? `
-    <section class="blocco">
-      <div class="etichetta">Flashcard</div>
-      <div id="flash-wrap"></div>
-    </section>` : ""}
-
-    <section class="blocco">
-      <div class="etichetta">Esercizi</div>
-      ${esercizi.length ? renderBloccoEsercizi(esercizi, "oggi")
-        : `<div class="vuoto-blocco">Esercizi non disponibili: questa lezione risale a prima che il quaderno li salvasse.</div>`}
-    </section>
-
-    ${bloccoRecall("n3")}
-    ${bloccoRecall("n10")}
-    ${bloccoRecall("n30")}
-
-    ${riepilogo.length ? `
-    <section class="blocco">
-      <div class="etichetta">Riepilogo percorso</div>
-      ${riepilogo.map(r => `<div class="gram-punto">${escapeHtml(r)}</div>`).join("")}
-    </section>` : ""}
-  `;
-}
-
-function rigaVoce(v) {
-  return `
-    <div class="voce">
-      <button class="speak-mini" data-speak="${escapeHtml(v.ko)}" aria-label="Ascolta">🔊</button>
-      <span class="ko" style="flex:1">${escapeHtml(v.ko)}</span>
-      <span class="it">${escapeHtml(v.it)}</span>
+/* ---------- helper esercizi (condiviso) ---------- */
+function renderEsercizio(e,i){
+  if(e.tipo==="scelta"){
+    return `<div class="es" data-idx="${i}" data-tipo="scelta">
+      <div class="cons"><i>${i+1}.</i>${esc(e.consegna)}</div>
+      <div class="opz">${(e.opzioni||[]).map((op,j)=>`<button data-j="${j}">${esc(op)}</button>`).join("")}</div>
     </div>`;
-}
-
-function renderBloccoEsercizi(esercizi, gruppo) {
-  return esercizi.map((e, i) => renderEsercizio(e, i, gruppo)).join("");
-}
-
-function renderEsercizio(e, i, gruppo) {
-  if (e.tipo === "scelta") {
-    return `
-      <div class="es" data-idx="${i}" data-gruppo="${gruppo}" data-tipo="scelta">
-        <div class="consegna">${escapeHtml(e.consegna)}</div>
-        <div class="opzioni">
-          ${(e.opzioni || []).map((op, j) => `<button class="opzione" data-j="${j}">${escapeHtml(op)}</button>`).join("")}
-        </div>
-        <div class="spiegazione" style="display:none"></div>
-      </div>`;
   }
-  if (e.tipo === "correzione") {
-    return `
-      <div class="es" data-idx="${i}" data-gruppo="${gruppo}" data-tipo="correzione">
-        <div class="consegna">${escapeHtml(e.consegna)}</div>
-        <div class="frase-errata">${escapeHtml(e.frase)}</div>
-        <button class="mostra-btn">Mostra correzione</button>
-        <div class="risposta-box" style="display:none"></div>
-      </div>`;
-  }
-  // produzione (default)
-  return `
-    <div class="es" data-idx="${i}" data-gruppo="${gruppo}" data-tipo="produzione">
-      <div class="consegna">${escapeHtml(e.consegna)}</div>
-      <button class="mostra-btn">Mostra risposta</button>
-      <div class="risposta-box" style="display:none"></div>
+  if(e.tipo==="correzione"){
+    return `<div class="es" data-idx="${i}" data-tipo="correzione">
+      <div class="cons"><i>${i+1}.</i>${esc(e.consegna)}</div>
+      <div class="frase">${esc(e.frase)}</div>
+      <div class="btnrow"><button class="btn mostra-btn">Mostra la correzione</button></div>
     </div>`;
+  }
+  return `<div class="es" data-idx="${i}" data-tipo="produzione">
+    <div class="cons"><i>${i+1}.</i>${esc(e.consegna)}</div>
+    <div class="btnrow"><button class="btn mostra-btn">Mostra la risposta</button></div>
+  </div>`;
 }
-
-function attachEserciziHandlers(mappaGruppi) {
-  // mappaGruppi: { "oggi": [...], "n3": [...], ... }
-  document.querySelectorAll(".es").forEach(el => {
-    const gruppo = mappaGruppi[el.dataset.gruppo] || [];
-    const e = gruppo[parseInt(el.dataset.idx, 10)];
-    if (!e) return;
-    if (el.dataset.tipo === "scelta") {
-      el.querySelectorAll(".opzione").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const j = parseInt(btn.dataset.j, 10);
-          el.querySelectorAll(".opzione").forEach((b, k) => {
-            b.disabled = true;
-            if (k === e.corretta) b.classList.add("corretta");
-            else if (k === j) b.classList.add("sbagliata");
-          });
-          const sp = el.querySelector(".spiegazione");
-          sp.textContent = e.spiegazione || "";
-          sp.style.display = "block";
+function attachBloccoEsercizi(container, esercizi, scoreEls){
+  const stato={fatti:0,giusti:0,tot:esercizi.length};
+  const aggiorna=()=>{ if(scoreEls){scoreEls.sc.textContent=stato.giusti;scoreEls.sct.textContent='su '+stato.tot;} };
+  aggiorna();
+  container.querySelectorAll(".es").forEach(el=>{
+    const e=esercizi[parseInt(el.dataset.idx,10)];
+    let chiuso=false;
+    const registra=ok=>{if(chiuso)return;chiuso=true;stato.fatti++;if(ok)stato.giusti++;aggiorna();};
+    if(el.dataset.tipo==="scelta"){
+      el.querySelectorAll(".opz button").forEach((btn,j)=>{
+        btn.addEventListener("click",()=>{
+          if(chiuso && el.querySelectorAll(".opz button")[0].disabled) return;
+          const ok=j===e.corretta;
+          el.querySelectorAll(".opz button").forEach(b=>b.disabled=true);
+          el.querySelectorAll(".opz button")[e.corretta].classList.add("ok");
+          if(!ok) btn.classList.add("no");
+          const es=document.createElement("div");es.className="esito "+(ok?"ok":"no");
+          es.textContent=(ok?"Giusto. ":"Non ci siamo. ")+(e.spiegazione||"");
+          el.appendChild(es);
+          registra(ok);
         });
       });
     } else {
-      const btn = el.querySelector(".mostra-btn");
-      btn?.addEventListener("click", () => {
-        const box = el.querySelector(".risposta-box");
-        box.innerHTML = `<div class="ko">${escapeHtml(e.risposta)}</div><div class="spiegazione">${escapeHtml(e.spiegazione || "")}</div>`;
-        box.style.display = "block";
-        btn.style.display = "none";
+      const mostra=el.querySelector(".mostra-btn");
+      mostra.addEventListener("click",()=>{
+        mostra.closest(".btnrow").remove();
+        const r=document.createElement("div");r.className="risp";
+        r.innerHTML=`<div class="t"><div class="ko">${esc(e.risposta)}</div>${e.spiegazione?`<div class="it">${esc(e.spiegazione)}</div>`:""}</div><button class="sp" aria-label="Ascolta">${SP}</button>`;
+        r.querySelector(".sp").addEventListener("click",()=>parla(e.risposta));
+        el.appendChild(r);parla(e.risposta);
+        const g=document.createElement("div");g.className="giud";
+        const si=document.createElement("button");si.className="btn o";si.textContent="L'avevo giusta";
+        const no=document.createElement("button");no.className="btn o";no.textContent="L'avevo sbagliata";
+        si.addEventListener("click",()=>{registra(true);g.innerHTML='<span class="esito ok" style="margin:0">Segnata come giusta.</span>';});
+        no.addEventListener("click",()=>{registra(false);g.innerHTML='<span class="esito no" style="margin:0">Segnata come da ripassare.</span>';});
+        g.appendChild(si);g.appendChild(no);el.appendChild(g);
       });
     }
   });
 }
 
-function attachLezioneHandlers(lez) {
-  document.getElementById("btn-torna").addEventListener("click", () => { location.hash = "#/"; });
-
-  document.querySelectorAll("[data-speak]").forEach(el => {
-    el.addEventListener("click", (ev) => { ev.stopPropagation(); parla(el.dataset.speak); });
+/* ---------- helper mazzo con flag errori ---------- */
+function renderMazzoFlag(mazzo, idField){
+  return mazzo.map(v=>`
+    <div class="mazzo-riga" data-num="${v[idField]}">
+      <span class="num">${v[idField]}</span>
+      <button class="sp" style="width:26px;height:26px;border-radius:50%;background:var(--accSoft);color:var(--acc);border:none;display:grid;place-items:center;flex:none;cursor:pointer" data-speak="${esc(v.ko)}">${SP}</button>
+      <span class="ko">${esc(v.ko)}</span>
+      <span class="it">${esc(v.it)}</span>
+      <button class="flag" data-num="${v[idField]}" aria-label="Segna come sbagliata">✕</button>
+    </div>`).join("");
+}
+function attachMazzoFlag(container, comandoPrefix){
+  const sbagliate=new Set();
+  const box=container.querySelector(".errori-box");
+  const aggiorna=()=>{
+    if(!sbagliate.size){ box.style.display="none"; return; }
+    box.style.display="block";
+    const numeri=[...sbagliate].sort((a,b)=>a-b).join(", ");
+    box.querySelector("code").textContent=`${comandoPrefix}: ${numeri}`;
+  };
+  container.querySelectorAll(".flag").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const n=parseInt(btn.dataset.num,10);
+      btn.classList.toggle("on");
+      if(sbagliate.has(n)) sbagliate.delete(n); else sbagliate.add(n);
+      aggiorna();
+    });
   });
-
-  // flashcard
-  const c = lez.contenuto || {};
-  const esercizi = lez.esercizi || [];
-  const recall = lez.recall || {};
-  const mazzo = [...(c.vocaboli || []), ...(c.frasi || [])];
-  const flashWrap = document.getElementById("flash-wrap");
-  if (flashWrap && mazzo.length) {
-    let idx = 0, girata = false;
-    const draw = () => {
-      const card = mazzo[idx];
-      flashWrap.innerHTML = `
-        <div class="flash-card" id="flash-card">
-          ${girata
-            ? `<div class="it">${escapeHtml(card.it)}</div>`
-            : `<div class="ko">${escapeHtml(card.ko)}</div>`}
-        </div>
-        <div class="flash-nav">
-          <button id="flash-prev">← Precedente</button>
-          <span class="cnt">${idx + 1} / ${mazzo.length}</span>
-          <button id="flash-speak">🔊</button>
-          <button id="flash-next">Successiva →</button>
-        </div>`;
-      document.getElementById("flash-card").addEventListener("click", () => { girata = !girata; draw(); });
-      document.getElementById("flash-prev").addEventListener("click", () => { idx = (idx - 1 + mazzo.length) % mazzo.length; girata = false; draw(); });
-      document.getElementById("flash-next").addEventListener("click", () => { idx = (idx + 1) % mazzo.length; girata = false; draw(); });
-      document.getElementById("flash-speak").addEventListener("click", (ev) => { ev.stopPropagation(); parla(card.ko); });
-    };
-    draw();
-  }
-
-  // esercizi (oggi + recall)
-  const mappaGruppi = { oggi: esercizi };
-  ["n3", "n10", "n30"].forEach(k => {
-    if (recall[k]) mappaGruppi[k] = recall[k].esercizi || [];
+  container.querySelector(".copia-btn")?.addEventListener("click",(e)=>{
+    const testo=box.querySelector("code").textContent;
+    navigator.clipboard?.writeText(testo).then(()=>{
+      e.target.textContent="Copiato ✓";
+      setTimeout(()=>{e.target.textContent="Copia il comando";},1500);
+    });
   });
-  attachEserciziHandlers(mappaGruppi);
 }
 
-/* ---------------- RIPASSO ---------------- */
+/* ---------- LEZIONE ---------- */
+function renderGrammatica(grammatica){
+  return grammatica.map(p=>{
+    if(typeof p==="string"){
+      return `<div class="gp"><p class="reg">${esc(p)}</p></div>`;
+    }
+    return `<div class="gp">
+      <p class="reg">${esc(p.regola)}</p>
+      ${p.esempio_ko?`<div class="ex" data-speak="${esc(p.esempio_ko)}"><div class="t"><div class="ko">${esc(p.esempio_ko)}</div>${p.esempio_it?`<div class="it">${esc(p.esempio_it)}</div>`:""}</div><div class="sp">${SP}</div></div>`:""}
+      ${p.pronuncia?`<p class="pron">Pronuncia — ${esc(p.pronuncia)}</p>`:""}
+    </div>`;
+  }).join("");
+}
+function renderRiepilogo(righe){
+  return righe.map(r=>{
+    const isBarra = /[█░]/.test(r) || r.trim().startsWith("[");
+    return `<div class="riep-riga${isBarra?" barra":""}">${esc(r)}</div>`;
+  }).join("");
+}
 
-function renderRipasso(r) {
-  const c = r.contenuto || {};
-  const deck = r.deck || [];
+function renderLezione(lez){
+  const c=lez.contenuto||{};
+  const vocaboli=c.vocaboli||[],frasi=c.frasi||[],grammatica=c.grammatica||[],dialogo=c.dialogo||[];
+  const esercizi=lez.esercizi||[],recall=lez.recall||{},riepilogo=lez.riepilogo||[];
+  const mazzo=[...vocaboli,...frasi];
+
+  const ancore=[];
+  if(vocaboli.length) ancore.push('<a href="#vocaboli">Vocabolario</a>');
+  if(frasi.length) ancore.push('<a href="#frasi">Frasi</a>');
+  if(grammatica.length) ancore.push('<a href="#grammatica">Grammatica</a>');
+  if(dialogo.length) ancore.push('<a href="#dialogo">Dialogo</a>');
+  if(mazzo.length) ancore.push('<a href="#flashcard">Flashcard</a>');
+  ancore.push('<a href="#esercizi">Esercizi</a>');
+
+  const blocchi=[{key:"oggi",titolo:"Esercizi",esercizi:esercizi,vuoto:"Questa lezione risale a prima che il quaderno salvasse gli esercizi."}];
+  ["n3","n10","n30"].forEach(k=>{
+    const r=recall[k];
+    if(r) blocchi.push({key:k,titolo:`Ripasso · L.${r.lezione_numero}`,esercizi:r.esercizi||[],mazzo:r.mazzo||null});
+  });
+
   return `
-    <button class="torna" id="btn-torna">← Tutti i ripassi</button>
-    <div class="lez-head">
-      <div class="sub">Ripasso generale</div>
-      <h2>Lezioni ${r.da_lezione}–${r.a_lezione}</h2>
+    <div class="hero">
+      <div class="meta"><b>${String(lez.numero).padStart(2,"0")}</b><span class="tag">${lez.tipo==="GRAMMATICA"?"Grammatica":"Situazione"}</span><span>${dataItaliana(lez.data)}</span></div>
+      <h1>${esc(lez.titolo)}</h1>
     </div>
 
-    ${(c.lezioni_ripassate || []).length ? `
-    <section class="blocco">
-      <div class="etichetta">Lezioni ripassate</div>
-      ${c.lezioni_ripassate.map(l => `<div class="gram-punto">${escapeHtml(l)}</div>`).join("")}
-    </section>` : ""}
+    <nav class="jump">${ancore.join("")}</nav>
 
-    ${(c.grammatica_coperta || []).length ? `
-    <section class="blocco">
-      <div class="etichetta">Grammatica coperta</div>
-      ${c.grammatica_coperta.map(g => `<div class="gram-punto">${escapeHtml(g)}</div>`).join("")}
-    </section>` : ""}
+    ${vocaboli.length?`<section id="vocaboli"><div class="card"><div class="sh"><h2>Vocabolario</h2><small>tocca per ascoltare</small></div>
+      <div class="voc">${vocaboli.map(v=>`<button class="v" data-speak="${esc(v.ko)}"><span class="ko">${esc(v.ko)}</span><span class="it">${esc(v.it)}</span><span class="sp">${SP}</span></button>`).join("")}</div>
+    </div></section>`:""}
 
-    ${deck.length ? `
-    <section class="blocco">
-      <div class="etichetta">Da ripassare + parole importanti</div>
-      ${deck.map(v => `
-        <div class="voce">
-          <button class="speak-mini" data-speak="${escapeHtml(v.ko)}" aria-label="Ascolta">🔊</button>
-          <span class="indice-num" style="min-width:22px">${v.n}</span>
-          <span class="ko" style="flex:1">${escapeHtml(v.ko)}</span>
-          <span class="it">${escapeHtml(v.it)}</span>
-        </div>`).join("")}
-      <div class="vuoto-blocco" style="margin-top:8px">Per riferire gli errori: "ERRORI ripasso: 3, 8, 12" (i numeri qui sopra).</div>
-    </section>` : ""}
+    ${frasi.length?`<section id="frasi"><div class="card"><div class="sh"><h2>Frasi comuni</h2><small>tocca per ascoltare</small></div>
+      <div class="fr">${frasi.map(f=>`<button data-speak="${esc(f.ko)}"><span class="ko">${esc(f.ko)}</span><span class="it">${esc(f.it)}</span></button>`).join("")}</div>
+    </div></section>`:""}
 
-    <section class="blocco">
-      <div class="etichetta">Esercizi</div>
-      ${(c.esercizi || []).length ? renderBloccoEsercizi(c.esercizi, "ripasso")
-        : `<div class="vuoto-blocco">Non disponibili.</div>`}
-    </section>
+    ${grammatica.length?`<section id="grammatica"><div class="card"><div class="sh"><h2>Grammatica e particolarità</h2></div>
+      <div>${renderGrammatica(grammatica)}</div>
+    </div></section>`:""}
 
-    ${(c.riepilogo || []).length ? `
-    <section class="blocco">
-      <div class="etichetta">Riepilogo percorso</div>
-      ${c.riepilogo.map(x => `<div class="gram-punto">${escapeHtml(x)}</div>`).join("")}
-    </section>` : ""}
+    ${dialogo.length?`<section id="dialogo"><div class="card"><div class="sh"><h2>Dialogo</h2><small>tocca una battuta</small></div>
+      <div class="dia" id="dia">${dialogo.map((b,i)=>`<button class="b ${b.chi==="studente"?"studente":"altro"}" data-i="${i}"><span class="chi">${b.chi==="studente"?"tu":esc(b.chi)}</span><span class="ko">${esc(b.ko)}</span><span class="it">${esc(b.it)}</span></button>`).join("")}</div>
+      <div class="btnrow"><button class="btn" id="play-dialogo">Riproduci tutto</button><button class="btn o" id="hide-it">Nascondi italiano</button></div>
+    </div></section>`:""}
+
+    ${mazzo.length?`<section id="flashcard"><div class="card"><div class="sh"><h2>Flashcard</h2><small>tocca la carta per girarla</small></div>
+      <div class="flash"><div class="fc" id="fc"><div class="front" id="ff"></div><div class="back" id="fb"></div></div></div>
+      <div class="fnav"><button class="btn o" id="fprev">Indietro</button><div class="bar"><i id="fbar"></i></div><span class="cnt" id="fcnt"></span><button class="btn o" id="fspk">Ascolta</button><button class="btn" id="fnext">Avanti</button></div>
+    </div></section>`:""}
+
+    <section id="esercizi"><div class="card">
+      <div class="sh"><h2>Esercizi</h2><small id="ex-sub"></small></div>
+      <div class="seg" id="ex-seg"></div>
+      <div id="ex-mazzo"></div>
+      <div id="ex-wrap"></div>
+      <div class="score"><span>Risposte corrette</span><span><b id="ex-sc">0</b> <span id="ex-sct"></span></span></div>
+    </div></section>
+
+    ${riepilogo.length?`<section id="riepilogo"><div class="card"><div class="sh"><h2>Riepilogo percorso</h2></div>${renderRiepilogo(riepilogo)}</div></section>`:""}
+
+    <footer>Quaderno di coreano · lezione ${lez.numero}</footer>
   `;
 }
 
-function attachRipassoHandlers(r) {
-  document.getElementById("btn-torna").addEventListener("click", () => { location.hash = "#/ripassi"; });
-  document.querySelectorAll("[data-speak]").forEach(el => {
-    el.addEventListener("click", (ev) => { ev.stopPropagation(); parla(el.dataset.speak); });
+function attachLezioneHandlers(lez){
+  const c=lez.contenuto||{};
+  const mazzo=[...(c.vocaboli||[]),...(c.frasi||[])];
+  const esercizi=lez.esercizi||[],recall=lez.recall||{};
+
+  document.querySelectorAll("[data-speak]").forEach(el=>{
+    el.addEventListener("click",(ev)=>{ev.stopPropagation();parla(el.dataset.speak);
+      if(el.classList.contains("v")){document.querySelectorAll(".v").forEach(x=>x.classList.remove("play"));el.classList.add("play");setTimeout(()=>el.classList.remove("play"),2200);}
+    });
   });
-  attachEserciziHandlers({ ripasso: (r.contenuto || {}).esercizi || [] });
+
+  const dia=document.getElementById("dia");
+  const dialogo=c.dialogo||[];
+  if(dia){
+    dia.querySelectorAll(".b").forEach(b=>{
+      b.addEventListener("click",()=>{dia.querySelectorAll(".b").forEach(x=>x.classList.remove("on"));b.classList.add("on");parla(dialogo[b.dataset.i].ko);});
+    });
+    document.getElementById("hide-it").addEventListener("click",(e)=>{
+      const h=dia.classList.toggle("noit");e.target.textContent=h?"Mostra italiano":"Nascondi italiano";
+    });
+    document.getElementById("play-dialogo").addEventListener("click",()=>{
+      let i=0;const bs=dia.querySelectorAll(".b");
+      const step=()=>{ if(i>=dialogo.length){bs.forEach(x=>x.classList.remove("on"));return;}
+        bs.forEach(x=>x.classList.remove("on"));bs[i].classList.add("on");
+        parla(dialogo[i].ko,()=>{i++;setTimeout(step,320);}); };
+      step();
+    });
+  }
+
+  if(mazzo.length){
+    let fi=0,fl=false;
+    const draw=()=>{ const card=mazzo[fi];
+      document.getElementById("ff").textContent=card.ko;document.getElementById("fb").textContent=card.it;
+      document.getElementById("fc").classList.toggle("f",fl);
+      document.getElementById("fcnt").textContent=`${fi+1}/${mazzo.length}`;
+      document.getElementById("fbar").style.width=((fi+1)/mazzo.length*100)+"%"; };
+    document.getElementById("fc").addEventListener("click",()=>{fl=!fl;draw();});
+    document.getElementById("fprev").addEventListener("click",()=>{fi=(fi-1+mazzo.length)%mazzo.length;fl=false;draw();});
+    document.getElementById("fnext").addEventListener("click",()=>{fi=(fi+1)%mazzo.length;fl=false;draw();});
+    document.getElementById("fspk").addEventListener("click",()=>parla(mazzo[fi].ko));
+    draw();
+  }
+
+  const blocchi=[{key:"oggi",titolo:"Oggi",esercizi:esercizi,vuoto:"Questa lezione risale a prima che il quaderno salvasse gli esercizi."}];
+  ["n3","n10","n30"].forEach(k=>{ const r=recall[k]; if(r) blocchi.push({key:k,titolo:`L.${r.lezione_numero}`,esercizi:r.esercizi||[],mazzo:r.mazzo||null}); });
+
+  const seg=document.getElementById("ex-seg");
+  seg.innerHTML=blocchi.map((b,i)=>`<button data-i="${i}" class="${i?'':'on'}">${esc(b.titolo)}</button>`).join("");
+  const eswrap=document.getElementById("ex-wrap"),exmazzo=document.getElementById("ex-mazzo"),exsub=document.getElementById("ex-sub");
+  const scoreEls={sc:document.getElementById("ex-sc"),sct:document.getElementById("ex-sct")};
+
+  function mostraBlocco(b){
+    exsub.textContent = b.mazzo ? "Mazzo da ripassare + esercizi di traduzione" : "";
+    exmazzo.innerHTML="";
+    if(b.mazzo && b.mazzo.length){
+      exmazzo.innerHTML=`<div style="margin-bottom:16px">${renderMazzoFlag(b.mazzo,"card_n")}
+        <div class="errori-box" style="display:none">
+          <div class="vuoto">Comando da incollare in chat:</div>
+          <code></code>
+          <button class="btn o copia-btn">Copia il comando</button>
+        </div></div>`;
+      attachMazzoFlag(exmazzo, `ERRORI ripasso 30`);
+    }
+    if(!b.esercizi.length){
+      eswrap.innerHTML=`<div class="vuoto">${b.vuoto||"Non disponibile."}</div>`;
+      scoreEls.sc.textContent="0";scoreEls.sct.textContent="su 0";
+      return;
+    }
+    eswrap.innerHTML=b.esercizi.map((e,i)=>renderEsercizio(e,i)).join("");
+    attachBloccoEsercizi(eswrap,b.esercizi,scoreEls);
+  }
+  seg.querySelectorAll("button").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      seg.querySelectorAll("button").forEach(x=>x.classList.remove("on"));btn.classList.add("on");
+      mostraBlocco(blocchi[parseInt(btn.dataset.i,10)]);
+    });
+  });
+  mostraBlocco(blocchi[0]);
 }
 
-/* ---------------- avvio ---------------- */
+/* ---------- RIPASSO ---------- */
+function renderRipasso(r){
+  const c=r.contenuto||{};
+  const deck=r.deck||[];
+  return `
+    <div class="hero"><div class="meta"><span class="tag">Ripasso generale</span><span>${dataItaliana(r.data)}</span></div><h1>Lezioni ${r.da_lezione}–${r.a_lezione}</h1></div>
 
-window.addEventListener("hashchange", render);
-window.addEventListener("load", () => {
+    ${(c.lezioni_ripassate||[]).length?`<section><div class="card"><div class="sh"><h2>Lezioni ripassate</h2></div>${c.lezioni_ripassate.map(l=>`<div class="riep-riga">${esc(l)}</div>`).join("")}</div></section>`:""}
+
+    ${(c.grammatica_coperta||[]).length?`<section><div class="card"><div class="sh"><h2>Grammatica coperta</h2></div>${c.grammatica_coperta.map(g=>`<div class="riep-riga">${esc(g)}</div>`).join("")}</div></section>`:""}
+
+    ${deck.length?`<section><div class="card"><div class="sh"><h2>Da ripassare + parole importanti</h2><small>tocca ✕ su quelle sbagliate</small></div>
+      ${renderMazzoFlag(deck,"n")}
+      <div class="errori-box" style="display:none"><div class="vuoto">Comando da incollare in chat:</div><code></code><button class="btn o copia-btn">Copia il comando</button></div>
+    </div></section>`:""}
+
+    <section><div class="card">
+      <div class="sh"><h2>Esercizi</h2></div>
+      <div id="ex-wrap"></div>
+      <div class="score"><span>Risposte corrette</span><span><b id="ex-sc">0</b> <span id="ex-sct"></span></span></div>
+    </div></section>
+
+    ${(c.riepilogo||[]).length?`<section><div class="card"><div class="sh"><h2>Riepilogo percorso</h2></div>${renderRiepilogo(c.riepilogo)}</div></section>`:""}
+  `;
+}
+function attachRipassoHandlers(r){
+  const c=r.contenuto||{};
+  document.querySelectorAll("[data-speak]").forEach(el=>{el.addEventListener("click",(ev)=>{ev.stopPropagation();parla(el.dataset.speak);});});
+  const deckBox=[...document.querySelectorAll(".card")].find(card=>card.querySelector(".mazzo-riga"));
+  if(deckBox) attachMazzoFlag(deckBox, "ERRORI ripasso");
+  const esercizi=c.esercizi||[];
+  const eswrap=document.getElementById("ex-wrap");
+  const scoreEls={sc:document.getElementById("ex-sc"),sct:document.getElementById("ex-sct")};
+  if(!esercizi.length){ eswrap.innerHTML=`<div class="vuoto">Non disponibili.</div>`; scoreEls.sct.textContent="su 0"; }
+  else { eswrap.innerHTML=esercizi.map((e,i)=>renderEsercizio(e,i)).join(""); attachBloccoEsercizi(eswrap,esercizi,scoreEls); }
+}
+
+/* ---------- avvio ---------- */
+window.addEventListener("hashchange",render);
+window.addEventListener("load",()=>{
   render();
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 });
-document.getElementById("btn-refresh").addEventListener("click", async () => {
-  await caricaLezioni(true);
+document.getElementById("btn-refresh").addEventListener("click",async()=>{
+  await Promise.all([caricaLezioni(true).catch(()=>{}),caricaRipassi(true).catch(()=>{})]);
   render();
 });
-document.getElementById("btn-voce").addEventListener("click", () => {
-  document.getElementById("voice-panel").classList.toggle("aperto");
-  popolaVoci();
-});
-document.getElementById("voice-select").addEventListener("change", (e) => {
-  localStorage.setItem("voce_ko", e.target.value);
-});
-document.getElementById("voice-prova").addEventListener("click", () => parla("안녕하세요"));
 </script>
 </body>
 </html>
