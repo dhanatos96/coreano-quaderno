@@ -177,6 +177,19 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .riep-riga{padding:7px 0;font-size:14.5px;line-height:1.6}
 .riep-riga.barra{font-family:ui-monospace,monospace;font-size:13px;color:var(--acc);white-space:pre}
 
+.ric{padding:20px 0;border-top:1px solid var(--line)}
+.ric:first-child{border-top:none;padding-top:0}
+.ric-it{font-size:15px;color:var(--mute);margin-bottom:10px;line-height:1.5}
+.ric-strip{min-height:56px;border:1.5px dashed var(--line);border-radius:14px;padding:9px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--bg2);transition:border-color .2s}
+.ric-strip:empty::before{content:"Tocca le parole qui sotto per comporre la frase";color:var(--mute);font-size:13px;font-family:var(--ui)}
+.ric-bank{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.parola{font:inherit;font-family:var(--kr);font-size:17px;padding:9px 15px;border-radius:12px;border:1px solid var(--line);background:var(--card);cursor:pointer;color:var(--ink)}
+.parola:active{transform:scale(.96)}
+.parola.piazzata{background:var(--accSoft);border-color:var(--acc);color:var(--acc)}
+.parola[hidden]{display:none}
+.ric.corretto .ric-strip{border-style:solid;border-color:var(--ok)}
+.ric.corretto .parola.piazzata{background:var(--okSoft);border-color:var(--ok);color:var(--ok)}
+
 footer{text-align:center;color:var(--mute);font-size:12.5px;padding:18px 0 0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 @media (min-width:720px){.page{padding:0 24px 100px}.voc{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
@@ -430,6 +443,88 @@ function mazzoDiLezione(rif){
   return [...(c.vocaboli||[]),...(c.frasi||[])].map((v,i)=>({card_n:i+1,ko:v.ko,it:v.it}));
 }
 
+/* ---------- ricomponi la frase ---------- */
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+function scegliFrasiRicomponi(frasi){
+  return frasi.map(f=>({ko:f.ko,it:f.it,tok:f.ko.split(/\s+/).filter(Boolean)}))
+    .filter(f=>f.tok.length>=3)
+    .sort((a,b)=>b.tok.length-a.tok.length)
+    .slice(0,3);
+}
+function attachRicomponi(frasiScelte){
+  frasiScelte.forEach((f,i)=>{
+    const tokens=f.tok;
+    const bank=tokens.map((t,idx)=>({testo:t,idx,usata:false}));
+    let ordineVisuale=shuffle(bank);
+    let tentativi=0;
+    while(tentativi<5 && ordineVisuale.map(x=>x.testo).join("|")===tokens.join("|")){
+      ordineVisuale=shuffle(bank);tentativi++;
+    }
+    let strip=[],risolto=false;
+
+    const stripEl=document.getElementById(`ric-strip-${i}`);
+    const bankEl=document.getElementById(`ric-bank-${i}`);
+    const checkBtn=document.getElementById(`ric-check-${i}`);
+    const esitoEl=document.getElementById(`ric-esito-${i}`);
+    const blockEl=document.querySelector(`.ric[data-idx="${i}"]`);
+
+    function drawBank(){
+      bankEl.innerHTML=ordineVisuale.map(item=>`<button class="parola" data-idx="${item.idx}" ${item.usata?"hidden":""}>${esc(item.testo)}</button>`).join("");
+      bankEl.querySelectorAll("button").forEach(btn=>{
+        btn.addEventListener("click",()=>{
+          if(risolto) return;
+          const idx=parseInt(btn.dataset.idx,10);
+          bank[idx].usata=true;
+          strip.push(bank[idx]);
+          esitoEl.style.display="none";
+          drawBank();drawStrip();
+        });
+      });
+    }
+    function drawStrip(){
+      stripEl.innerHTML=strip.map(item=>`<button class="parola piazzata" data-idx="${item.idx}">${esc(item.testo)}</button>`).join("");
+      stripEl.querySelectorAll("button").forEach(btn=>{
+        btn.addEventListener("click",()=>{
+          if(risolto) return;
+          const idx=parseInt(btn.dataset.idx,10);
+          bank[idx].usata=false;
+          strip=strip.filter(x=>x.idx!==idx);
+          esitoEl.style.display="none";
+          drawBank();drawStrip();
+        });
+      });
+      checkBtn.disabled=strip.length!==tokens.length;
+    }
+    document.getElementById(`ric-reset-${i}`).addEventListener("click",()=>{
+      bank.forEach(b=>b.usata=false);
+      strip=[];risolto=false;
+      esitoEl.style.display="none";
+      blockEl.classList.remove("corretto");
+      drawBank();drawStrip();
+    });
+    document.getElementById(`ric-hear-${i}`).addEventListener("click",()=>parla(f.ko));
+    checkBtn.addEventListener("click",()=>{
+      const ok=strip.map(x=>x.testo).join(" ")===tokens.join(" ");
+      esitoEl.style.display="block";
+      if(ok){
+        risolto=true;
+        esitoEl.className="esito ok";
+        esitoEl.textContent="Giusto! "+f.ko;
+        blockEl.classList.add("corretto");
+        parla(f.ko);
+      } else {
+        esitoEl.className="esito no";
+        esitoEl.textContent="Non è l'ordine giusto: tocca le parole per rimetterle a posto e riprova.";
+      }
+    });
+    drawBank();drawStrip();
+  });
+}
+
 /* ---------- componente flashcard riutilizzabile (con flag errori opzionale) ---------- */
 function creaFlashDeckHTML(idPrefix, conFlag){
   const flagBtn = conFlag ? `<button class="ib" id="${idPrefix}-flag" aria-label="Segna come sbagliata">✕</button>` : "";
@@ -510,6 +605,8 @@ function renderLezione(lez){
   const ancore=[];
   if(vocaboli.length) ancore.push('<a href="#vocaboli">Vocabolario</a>');
   if(frasi.length) ancore.push('<a href="#frasi">Frasi</a>');
+  const daRicomporre = scegliFrasiRicomponi(frasi);
+  if(daRicomporre.length) ancore.push('<a href="#ricomponi">Ricomponi</a>');
   if(grammatica.length) ancore.push('<a href="#grammatica">Grammatica</a>');
   if(dialogo.length) ancore.push('<a href="#dialogo">Dialogo</a>');
   if(mazzo.length) ancore.push('<a href="#flashcard">Flashcard</a>');
@@ -529,6 +626,21 @@ function renderLezione(lez){
 
     ${frasi.length?`<section id="frasi"><div class="card"><div class="sh"><h2>Frasi comuni</h2><small>tocca per ascoltare</small></div>
       <div class="fr">${frasi.map(f=>`<button data-speak="${esc(f.ko)}"><span class="ko">${esc(f.ko)}</span><span class="it">${esc(f.it)}</span></button>`).join("")}</div>
+    </div></section>`:""}
+
+    ${daRicomporre.length?`<section id="ricomponi"><div class="card"><div class="sh"><h2>Ricomponi la frase</h2><small>tocca le parole nell'ordine giusto</small></div>
+      <div id="ricomponi-wrap">${daRicomporre.map((f,i)=>`
+        <div class="ric" data-idx="${i}">
+          <div class="ric-it">${esc(f.it)}</div>
+          <div class="ric-strip" id="ric-strip-${i}"></div>
+          <div class="ric-bank" id="ric-bank-${i}"></div>
+          <div class="btnrow">
+            <button class="btn o" id="ric-reset-${i}">Ricomincia</button>
+            <button class="ib" id="ric-hear-${i}" aria-label="Ascolta la frase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9v6h4l5 4V5L8 9H4zM17 8a5 5 0 010 8"/></svg></button>
+            <button class="btn" id="ric-check-${i}" disabled>Verifica</button>
+          </div>
+          <div class="esito" id="ric-esito-${i}" style="display:none"></div>
+        </div>`).join("")}</div>
     </div></section>`:""}
 
     ${grammatica.length?`<section id="grammatica"><div class="card"><div class="sh"><h2>Grammatica e particolarità</h2></div>
@@ -572,6 +684,10 @@ function attachLezioneHandlers(lez,dati){
 
   const dia=document.getElementById("dia");
   const dialogo=c.dialogo||[];
+
+  const daRicomporre=scegliFrasiRicomponi(c.frasi||[]);
+  if(daRicomporre.length) attachRicomponi(daRicomporre);
+
   if(dia){
     dia.querySelectorAll(".b").forEach(b=>{
       b.addEventListener("click",()=>{dia.querySelectorAll(".b").forEach(x=>x.classList.remove("on"));b.classList.add("on");parla(dialogo[b.dataset.i].ko);});
