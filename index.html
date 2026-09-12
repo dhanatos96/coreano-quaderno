@@ -242,7 +242,7 @@ function parla(testo) {
 async function caricaLezioni(forza) {
   if (lezioni && !forza) return lezioni;
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/lezioni?select=numero,data,tipo,titolo,contenuto,esercizi&order=numero.desc`,
+    `${SUPABASE_URL}/rest/v1/lezioni?select=numero,data,tipo,titolo,contenuto,esercizi,recall,riepilogo&order=numero.desc`,
     { headers: {
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
@@ -252,6 +252,22 @@ async function caricaLezioni(forza) {
   if (!res.ok) throw new Error(String(res.status));
   lezioni = await res.json();
   return lezioni;
+}
+
+let ripassi = null;
+async function caricaRipassi(forza) {
+  if (ripassi && !forza) return ripassi;
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/ripassi?select=id,data,da_lezione,a_lezione,deck,contenuto&order=data.desc,id.desc`,
+    { headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "Accept-Profile": "coreano"
+      } }
+  );
+  if (!res.ok) throw new Error(String(res.status));
+  ripassi = await res.json();
+  return ripassi;
 }
 
 function escapeHtml(s) {
@@ -269,6 +285,8 @@ function dataItaliana(iso) {
 function currentRoute() {
   const h = location.hash.replace(/^#\/?/, "");
   if (h.startsWith("lezione/")) return { view: "lezione", numero: parseInt(h.split("/")[1], 10) };
+  if (h === "ripassi") return { view: "ripassi" };
+  if (h.startsWith("ripasso/")) return { view: "ripasso", id: parseInt(h.split("/")[1], 10) };
   return { view: "elenco" };
 }
 
@@ -277,17 +295,30 @@ async function render() {
   const header = document.getElementById("titolo-header");
   const route = currentRoute();
   try {
-    const dati = await caricaLezioni(false);
     if (route.view === "elenco") {
+      const dati = await caricaLezioni(false);
       header.textContent = "Quaderno di coreano";
       app.innerHTML = renderElenco(dati);
       attachElencoHandlers(dati);
-    } else {
+    } else if (route.view === "lezione") {
+      const dati = await caricaLezioni(false);
       const lez = dati.find(l => l.numero === route.numero);
       if (!lez) { app.innerHTML = `<div class="stato-msg">Lezione non trovata.</div>`; return; }
       header.textContent = `Lezione ${lez.numero}`;
       app.innerHTML = renderLezione(lez);
       attachLezioneHandlers(lez);
+    } else if (route.view === "ripassi") {
+      const dati = await caricaRipassi(false);
+      header.textContent = "Ripassi generali";
+      app.innerHTML = renderElencoRipassi(dati);
+      attachElencoRipassiHandlers();
+    } else if (route.view === "ripasso") {
+      const dati = await caricaRipassi(false);
+      const r = dati.find(x => x.id === route.id);
+      if (!r) { app.innerHTML = `<div class="stato-msg">Ripasso non trovato.</div>`; return; }
+      header.textContent = `Ripasso · ${dataItaliana(r.data)}`;
+      app.innerHTML = renderRipasso(r);
+      attachRipassoHandlers(r);
     }
   } catch (e) {
     app.innerHTML = `
@@ -302,7 +333,8 @@ async function render() {
 /* ---------------- ELENCO ---------------- */
 
 function renderElenco(dati) {
-  if (!dati.length) return `<div class="stato-msg">Nessuna lezione salvata ancora.</div>`;
+  const link = `<button class="torna" id="btn-ripassi" style="padding:16px 0 8px">Ripassi generali →</button>`;
+  if (!dati.length) return link + `<div class="stato-msg">Nessuna lezione salvata ancora.</div>`;
   const righe = dati.map(l => `
     <button class="indice-riga" data-num="${l.numero}">
       <span class="indice-num">${l.numero}</span>
@@ -314,12 +346,35 @@ function renderElenco(dati) {
         </div>
       </span>
     </button>`).join("");
-  return `<div class="indice">${righe}</div>`;
+  return link + `<div class="indice">${righe}</div>`;
 }
 
 function attachElencoHandlers() {
   document.querySelectorAll(".indice-riga").forEach(el => {
     el.addEventListener("click", () => { location.hash = `#/lezione/${el.dataset.num}`; });
+  });
+  document.getElementById("btn-ripassi")?.addEventListener("click", () => { location.hash = "#/ripassi"; });
+}
+
+/* ---------------- ELENCO RIPASSI ---------------- */
+
+function renderElencoRipassi(dati) {
+  const torna = `<button class="torna" id="btn-torna">← Tutte le lezioni</button>`;
+  if (!dati.length) return torna + `<div class="stato-msg">Nessun ripasso generale ancora.</div>`;
+  const righe = dati.map(r => `
+    <button class="indice-riga" data-id="${r.id}">
+      <span class="indice-corpo">
+        <span class="indice-titolo">Lezioni ${r.da_lezione}–${r.a_lezione}</span>
+        <div class="indice-sub">${dataItaliana(r.data)}</div>
+      </span>
+    </button>`).join("");
+  return torna + `<div class="indice">${righe}</div>`;
+}
+
+function attachElencoRipassiHandlers() {
+  document.getElementById("btn-torna").addEventListener("click", () => { location.hash = "#/"; });
+  document.querySelectorAll(".indice-riga").forEach(el => {
+    el.addEventListener("click", () => { location.hash = `#/ripasso/${el.dataset.id}`; });
   });
 }
 
@@ -332,8 +387,20 @@ function renderLezione(lez) {
   const grammatica = c.grammatica || [];
   const dialogo = c.dialogo || [];
   const esercizi = lez.esercizi || [];
+  const recall = lez.recall || {};
+  const riepilogo = lez.riepilogo || [];
 
   const mazzo = [...vocaboli, ...frasi];
+
+  const bloccoRecall = (chiave, etichetta) => {
+    const r = recall[chiave];
+    if (!r) return "";
+    return `
+    <section class="blocco">
+      <div class="etichetta">Recall — Lezione ${r.lezione_numero}${r.titolo ? " · " + escapeHtml(r.titolo) : ""}</div>
+      ${renderBloccoEsercizi(r.esercizi || [], `${chiave}`)}
+    </section>`;
+  };
 
   return `
     <button class="torna" id="btn-torna">← Tutte le lezioni</button>
@@ -384,9 +451,19 @@ function renderLezione(lez) {
 
     <section class="blocco">
       <div class="etichetta">Esercizi</div>
-      ${esercizi.length ? esercizi.map((e, i) => renderEsercizio(e, i)).join("")
+      ${esercizi.length ? renderBloccoEsercizi(esercizi, "oggi")
         : `<div class="vuoto-blocco">Esercizi non disponibili: questa lezione risale a prima che il quaderno li salvasse.</div>`}
     </section>
+
+    ${bloccoRecall("n3")}
+    ${bloccoRecall("n10")}
+    ${bloccoRecall("n30")}
+
+    ${riepilogo.length ? `
+    <section class="blocco">
+      <div class="etichetta">Riepilogo percorso</div>
+      ${riepilogo.map(r => `<div class="gram-punto">${escapeHtml(r)}</div>`).join("")}
+    </section>` : ""}
   `;
 }
 
@@ -399,10 +476,14 @@ function rigaVoce(v) {
     </div>`;
 }
 
-function renderEsercizio(e, i) {
+function renderBloccoEsercizi(esercizi, gruppo) {
+  return esercizi.map((e, i) => renderEsercizio(e, i, gruppo)).join("");
+}
+
+function renderEsercizio(e, i, gruppo) {
   if (e.tipo === "scelta") {
     return `
-      <div class="es" data-idx="${i}" data-tipo="scelta">
+      <div class="es" data-idx="${i}" data-gruppo="${gruppo}" data-tipo="scelta">
         <div class="consegna">${escapeHtml(e.consegna)}</div>
         <div class="opzioni">
           ${(e.opzioni || []).map((op, j) => `<button class="opzione" data-j="${j}">${escapeHtml(op)}</button>`).join("")}
@@ -412,7 +493,7 @@ function renderEsercizio(e, i) {
   }
   if (e.tipo === "correzione") {
     return `
-      <div class="es" data-idx="${i}" data-tipo="correzione">
+      <div class="es" data-idx="${i}" data-gruppo="${gruppo}" data-tipo="correzione">
         <div class="consegna">${escapeHtml(e.consegna)}</div>
         <div class="frase-errata">${escapeHtml(e.frase)}</div>
         <button class="mostra-btn">Mostra correzione</button>
@@ -421,11 +502,43 @@ function renderEsercizio(e, i) {
   }
   // produzione (default)
   return `
-    <div class="es" data-idx="${i}" data-tipo="produzione">
+    <div class="es" data-idx="${i}" data-gruppo="${gruppo}" data-tipo="produzione">
       <div class="consegna">${escapeHtml(e.consegna)}</div>
       <button class="mostra-btn">Mostra risposta</button>
       <div class="risposta-box" style="display:none"></div>
     </div>`;
+}
+
+function attachEserciziHandlers(mappaGruppi) {
+  // mappaGruppi: { "oggi": [...], "n3": [...], ... }
+  document.querySelectorAll(".es").forEach(el => {
+    const gruppo = mappaGruppi[el.dataset.gruppo] || [];
+    const e = gruppo[parseInt(el.dataset.idx, 10)];
+    if (!e) return;
+    if (el.dataset.tipo === "scelta") {
+      el.querySelectorAll(".opzione").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const j = parseInt(btn.dataset.j, 10);
+          el.querySelectorAll(".opzione").forEach((b, k) => {
+            b.disabled = true;
+            if (k === e.corretta) b.classList.add("corretta");
+            else if (k === j) b.classList.add("sbagliata");
+          });
+          const sp = el.querySelector(".spiegazione");
+          sp.textContent = e.spiegazione || "";
+          sp.style.display = "block";
+        });
+      });
+    } else {
+      const btn = el.querySelector(".mostra-btn");
+      btn?.addEventListener("click", () => {
+        const box = el.querySelector(".risposta-box");
+        box.innerHTML = `<div class="ko">${escapeHtml(e.risposta)}</div><div class="spiegazione">${escapeHtml(e.spiegazione || "")}</div>`;
+        box.style.display = "block";
+        btn.style.display = "none";
+      });
+    }
+  });
 }
 
 function attachLezioneHandlers(lez) {
@@ -437,6 +550,8 @@ function attachLezioneHandlers(lez) {
 
   // flashcard
   const c = lez.contenuto || {};
+  const esercizi = lez.esercizi || [];
+  const recall = lez.recall || {};
   const mazzo = [...(c.vocaboli || []), ...(c.frasi || [])];
   const flashWrap = document.getElementById("flash-wrap");
   if (flashWrap && mazzo.length) {
@@ -463,34 +578,71 @@ function attachLezioneHandlers(lez) {
     draw();
   }
 
-  // esercizi
-  const esercizi = lez.esercizi || [];
-  document.querySelectorAll(".es").forEach(el => {
-    const e = esercizi[parseInt(el.dataset.idx, 10)];
-    if (el.dataset.tipo === "scelta") {
-      el.querySelectorAll(".opzione").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const j = parseInt(btn.dataset.j, 10);
-          el.querySelectorAll(".opzione").forEach((b, k) => {
-            b.disabled = true;
-            if (k === e.corretta) b.classList.add("corretta");
-            else if (k === j) b.classList.add("sbagliata");
-          });
-          const sp = el.querySelector(".spiegazione");
-          sp.textContent = e.spiegazione || "";
-          sp.style.display = "block";
-        });
-      });
-    } else {
-      const btn = el.querySelector(".mostra-btn");
-      btn?.addEventListener("click", () => {
-        const box = el.querySelector(".risposta-box");
-        box.innerHTML = `<div class="ko">${escapeHtml(e.risposta)}</div><div class="spiegazione">${escapeHtml(e.spiegazione || "")}</div>`;
-        box.style.display = "block";
-        btn.style.display = "none";
-      });
-    }
+  // esercizi (oggi + recall)
+  const mappaGruppi = { oggi: esercizi };
+  ["n3", "n10", "n30"].forEach(k => {
+    if (recall[k]) mappaGruppi[k] = recall[k].esercizi || [];
   });
+  attachEserciziHandlers(mappaGruppi);
+}
+
+/* ---------------- RIPASSO ---------------- */
+
+function renderRipasso(r) {
+  const c = r.contenuto || {};
+  const deck = r.deck || [];
+  return `
+    <button class="torna" id="btn-torna">← Tutti i ripassi</button>
+    <div class="lez-head">
+      <div class="sub">Ripasso generale</div>
+      <h2>Lezioni ${r.da_lezione}–${r.a_lezione}</h2>
+    </div>
+
+    ${(c.lezioni_ripassate || []).length ? `
+    <section class="blocco">
+      <div class="etichetta">Lezioni ripassate</div>
+      ${c.lezioni_ripassate.map(l => `<div class="gram-punto">${escapeHtml(l)}</div>`).join("")}
+    </section>` : ""}
+
+    ${(c.grammatica_coperta || []).length ? `
+    <section class="blocco">
+      <div class="etichetta">Grammatica coperta</div>
+      ${c.grammatica_coperta.map(g => `<div class="gram-punto">${escapeHtml(g)}</div>`).join("")}
+    </section>` : ""}
+
+    ${deck.length ? `
+    <section class="blocco">
+      <div class="etichetta">Da ripassare + parole importanti</div>
+      ${deck.map(v => `
+        <div class="voce">
+          <button class="speak-mini" data-speak="${escapeHtml(v.ko)}" aria-label="Ascolta">🔊</button>
+          <span class="indice-num" style="min-width:22px">${v.n}</span>
+          <span class="ko" style="flex:1">${escapeHtml(v.ko)}</span>
+          <span class="it">${escapeHtml(v.it)}</span>
+        </div>`).join("")}
+      <div class="vuoto-blocco" style="margin-top:8px">Per riferire gli errori: "ERRORI ripasso: 3, 8, 12" (i numeri qui sopra).</div>
+    </section>` : ""}
+
+    <section class="blocco">
+      <div class="etichetta">Esercizi</div>
+      ${(c.esercizi || []).length ? renderBloccoEsercizi(c.esercizi, "ripasso")
+        : `<div class="vuoto-blocco">Non disponibili.</div>`}
+    </section>
+
+    ${(c.riepilogo || []).length ? `
+    <section class="blocco">
+      <div class="etichetta">Riepilogo percorso</div>
+      ${c.riepilogo.map(x => `<div class="gram-punto">${escapeHtml(x)}</div>`).join("")}
+    </section>` : ""}
+  `;
+}
+
+function attachRipassoHandlers(r) {
+  document.getElementById("btn-torna").addEventListener("click", () => { location.hash = "#/ripassi"; });
+  document.querySelectorAll("[data-speak]").forEach(el => {
+    el.addEventListener("click", (ev) => { ev.stopPropagation(); parla(el.dataset.speak); });
+  });
+  attachEserciziHandlers({ ripasso: (r.contenuto || {}).esercizi || [] });
 }
 
 /* ---------------- avvio ---------------- */
