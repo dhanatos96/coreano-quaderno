@@ -249,11 +249,13 @@ function trovaVoci(){
   vociKo.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=v.name+(v.localService?'':' (online)');if(voceKo&&v.name===voceKo.name)o.selected=true;sel.appendChild(o);});
 }
 if('speechSynthesis' in window){trovaVoci();speechSynthesis.onvoiceschanged=trovaVoci;}
+let velocitaKo=0.9;
+try{ const v=localStorage.getItem("velocitaKo"); if(v) velocitaKo=parseFloat(v); }catch(e){}
 function parla(t,cb){
   if(!('speechSynthesis' in window))return;
   if(!vociKo.length)trovaVoci();
   speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(t);u.lang='ko-KR';u.rate=.9;u.pitch=1.05;
+  const u=new SpeechSynthesisUtterance(t);u.lang='ko-KR';u.rate=velocitaKo;u.pitch=1.05;
   if(voceKo)u.voice=voceKo;
   if(cb)u.onend=cb;
   speechSynthesis.speak(u);
@@ -271,7 +273,7 @@ document.getElementById('btn-stop').onclick=()=>{if('speechSynthesis' in window)
 let lezioni=null;
 async function caricaLezioni(forza){
   if(lezioni && !forza) return lezioni;
-  const res=await fetch(`${SUPABASE_URL}/rest/v1/lezioni?select=numero,data,tipo,titolo,contenuto,esercizi,recall,riepilogo&order=numero.desc`,
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/lezioni?select=numero,data,tipo,titolo,contenuto,esercizi,riepilogo,curriculum:curriculum_id(livello)&order=numero.desc`,
     {headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${SUPABASE_ANON_KEY}`,"Accept-Profile":"coreano"}});
   if(!res.ok) throw new Error(String(res.status));
   lezioni=await res.json();return lezioni;
@@ -339,16 +341,28 @@ async function render(){
 }
 
 /* ---------- ELENCO ---------- */
+let filtroLivello="TUTTI";
 function renderElenco(dati){
+  const livelli=["TUTTI","A1","A2","B1","B2"];
+  const conteggi={};
+  dati.forEach(l=>{ const lv=(l.curriculum&&l.curriculum.livello)||"—"; conteggi[lv]=(conteggi[lv]||0)+1; });
+  const filtri=`<div class="seg" style="margin:0 0 18px">${livelli.map(lv=>{
+    const n = lv==="TUTTI" ? dati.length : (conteggi[lv]||0);
+    return `<button data-lv="${lv}" class="${lv===filtroLivello?"on":""}">${lv}${lv!=="TUTTI"?` · ${n}`:""}</button>`;
+  }).join("")}</div>`;
+
   const link=`<div class="hero"><div class="meta"><span class="tag">Percorso</span></div><h1>매일<br>한국어 공부</h1><p>Le tue lezioni di coreano, in ordine. Tocca per rivederle quando vuoi.</p></div>
+    ${filtri}
     <div class="btnrow" style="margin-bottom:18px"><button class="btn o" id="btn-ripassi">Ripassi generali →</button></div>`;
-  if(!dati.length) return link+`<div class="card vuoto">Nessuna lezione salvata ancora.</div>`;
-  const righe=dati.map(l=>`
+
+  const filtrate = filtroLivello==="TUTTI" ? dati : dati.filter(l=>(l.curriculum&&l.curriculum.livello)===filtroLivello);
+  if(!filtrate.length) return link+`<div class="card vuoto">${dati.length?`Nessuna lezione ancora per il livello ${filtroLivello}.`:"Nessuna lezione salvata ancora."}</div>`;
+  const righe=filtrate.map(l=>`
     <button class="elenco-riga" data-num="${l.numero}">
       <span class="elenco-num">${l.numero}</span>
       <span class="elenco-corpo">
         <span class="elenco-titolo">${esc(l.titolo)}</span>
-        <div class="elenco-sub"><span class="tag" style="font-size:10.5px;padding:2px 8px">${l.tipo==='GRAMMATICA'?'Grammatica':'Situazione'}</span> &nbsp;${dataItaliana(l.data)}</div>
+        <div class="elenco-sub"><span class="tag" style="font-size:10.5px;padding:2px 8px">${l.tipo==='GRAMMATICA'?'Grammatica':'Situazione'}</span>${l.curriculum&&l.curriculum.livello?` <span class="tag" style="font-size:10.5px;padding:2px 8px">${esc(l.curriculum.livello)}</span>`:""} &nbsp;${dataItaliana(l.data)}</div>
       </span>
       <span class="elenco-chev"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>
     </button>`).join("");
@@ -357,6 +371,9 @@ function renderElenco(dati){
 function attachElencoHandlers(){
   document.querySelectorAll(".elenco-riga").forEach(el=>{el.addEventListener("click",()=>{location.hash=`#/lezione/${el.dataset.num}`;});});
   document.getElementById("btn-ripassi")?.addEventListener("click",()=>{location.hash="#/ripassi";});
+  document.querySelectorAll("[data-lv]").forEach(btn=>{
+    btn.addEventListener("click",()=>{ filtroLivello=btn.dataset.lv; render(); });
+  });
 }
 
 /* ---------- ELENCO RIPASSI ---------- */
@@ -653,8 +670,8 @@ function renderLezione(lez){
     </div></section>`:""}
 
     ${dialogo.length?`<section id="dialogo"><div class="card"><div class="sh"><h2>Dialogo</h2><small>tocca una battuta</small></div>
+      <div class="btnrow" style="margin:0 0 14px"><button class="btn" id="play-dialogo">Riproduci tutto</button><button class="btn o" id="hide-it">Nascondi italiano</button><button class="btn o" id="slow-tog">Lento 0.7×</button></div>
       <div class="dia" id="dia">${dialogo.map((b,i)=>`<button class="b ${b.chi==="studente"?"studente":"altro"}" data-i="${i}"><span class="chi">${b.chi==="studente"?"tu":esc(b.chi)}</span><span class="ko">${esc(b.ko)}</span><span class="it">${esc(b.it)}</span></button>`).join("")}</div>
-      <div class="btnrow"><button class="btn" id="play-dialogo">Riproduci tutto</button><button class="btn o" id="hide-it">Nascondi italiano</button></div>
     </div></section>`:""}
 
     ${mazzo.length?`<section id="flashcard"><div class="card"><div class="sh"><h2>Flashcard</h2><small>tocca la carta per girarla</small></div>
@@ -700,6 +717,18 @@ function attachLezioneHandlers(lez,dati){
     document.getElementById("hide-it").addEventListener("click",(e)=>{
       const h=dia.classList.toggle("noit");e.target.textContent=h?"Mostra italiano":"Nascondi italiano";
     });
+    const slowBtn=document.getElementById("slow-tog");
+    const aggiornaSlow=()=>{
+      const lento=velocitaKo<0.85;
+      slowBtn.textContent=lento?"Normale 0.9×":"Lento 0.7×";
+      slowBtn.classList.toggle("o",!lento);
+    };
+    slowBtn.addEventListener("click",()=>{
+      velocitaKo = velocitaKo<0.85 ? 0.9 : 0.7;
+      try{localStorage.setItem("velocitaKo",String(velocitaKo));}catch(e){}
+      aggiornaSlow();
+    });
+    aggiornaSlow();
     document.getElementById("play-dialogo").addEventListener("click",()=>{
       let i=0;const bs=dia.querySelectorAll(".b");
       const step=()=>{ if(i>=dialogo.length){bs.forEach(x=>x.classList.remove("on"));return;}
