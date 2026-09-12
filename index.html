@@ -449,13 +449,16 @@ function shuffle(arr){
   for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
   return a;
 }
+let _ultimoRicomponi=[];
 function scegliFrasiRicomponi(frasi){
   const eleggibili=frasi.map(f=>({ko:f.ko,it:f.it,tok:f.ko.split(/\s+/).filter(Boolean)}))
     .filter(f=>f.tok.length>=3)
     .sort((a,b)=>b.tok.length-a.tok.length);
   const meta=Math.max(1,Math.ceil(eleggibili.length/2));
   const poolLunghe=eleggibili.slice(0,meta);
-  return shuffle(poolLunghe).slice(0,3);
+  const scelte=shuffle(poolLunghe).slice(0,3);
+  _ultimoRicomponi=scelte;
+  return scelte;
 }
 function attachRicomponi(frasiScelte){
   frasiScelte.forEach((f,i)=>{
@@ -687,7 +690,7 @@ function attachLezioneHandlers(lez,dati){
   const dia=document.getElementById("dia");
   const dialogo=c.dialogo||[];
 
-  const daRicomporre=scegliFrasiRicomponi(c.frasi||[]);
+  const daRicomporre=_ultimoRicomponi;
   if(daRicomporre.length) attachRicomponi(daRicomporre);
 
   if(dia){
