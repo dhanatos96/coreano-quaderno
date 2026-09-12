@@ -303,7 +303,7 @@ async function render(){
       if(!lez){app.innerHTML=`<div class="card vuoto">Lezione non trovata.</div>`;return;}
       setHeader(()=>{location.hash="#/"},'Lezioni',`Lezione ${lez.numero}`);
       app.innerHTML=renderLezione(lez);
-      attachLezioneHandlers(lez);
+      attachLezioneHandlers(lez,dati);
     } else if(route.view==="ripassi"){
       const dati=await caricaRipassi(false);
       setHeader(()=>{location.hash="#/"},'Lezioni','Ripassi generali');
@@ -424,6 +424,26 @@ function attachBloccoEsercizi(container, esercizi, scoreEls){
   });
 }
 
+function mazzoDiLezione(rif){
+  if(!rif) return [];
+  const c=rif.contenuto||{};
+  return [...(c.vocaboli||[]),...(c.frasi||[])].map((v,i)=>({card_n:i+1,ko:v.ko,it:v.it}));
+}
+function renderMazzoPlain(mazzo){
+  return mazzo.map(v=>`
+    <div class="mazzo-riga">
+      <span class="num">${v.card_n}</span>
+      <button class="sp" style="width:26px;height:26px;border-radius:50%;background:var(--accSoft);color:var(--acc);border:none;display:grid;place-items:center;flex:none;cursor:pointer" data-speak="${esc(v.ko)}">${SP}</button>
+      <span class="ko">${esc(v.ko)}</span>
+      <span class="it">${esc(v.it)}</span>
+    </div>`).join("");
+}
+function attachSpeakIn(container){
+  container.querySelectorAll("[data-speak]").forEach(el=>{
+    el.addEventListener("click",(ev)=>{ev.stopPropagation();parla(el.dataset.speak);});
+  });
+}
+
 /* ---------- helper mazzo con flag errori ---------- */
 function renderMazzoFlag(mazzo, idField){
   return mazzo.map(v=>`
@@ -484,7 +504,7 @@ function renderRiepilogo(righe){
 function renderLezione(lez){
   const c=lez.contenuto||{};
   const vocaboli=c.vocaboli||[],frasi=c.frasi||[],grammatica=c.grammatica||[],dialogo=c.dialogo||[];
-  const esercizi=lez.esercizi||[],recall=lez.recall||{},riepilogo=lez.riepilogo||[];
+  const esercizi=lez.esercizi||[],riepilogo=lez.riepilogo||[];
   const mazzo=[...vocaboli,...frasi];
 
   const ancore=[];
@@ -494,12 +514,6 @@ function renderLezione(lez){
   if(dialogo.length) ancore.push('<a href="#dialogo">Dialogo</a>');
   if(mazzo.length) ancore.push('<a href="#flashcard">Flashcard</a>');
   ancore.push('<a href="#esercizi">Esercizi</a>');
-
-  const blocchi=[{key:"oggi",titolo:"Esercizi",esercizi:esercizi,vuoto:"Questa lezione risale a prima che il quaderno salvasse gli esercizi."}];
-  ["n3","n10","n30"].forEach(k=>{
-    const r=recall[k];
-    if(r) blocchi.push({key:k,titolo:`Ripasso · L.${r.lezione_numero}`,esercizi:r.esercizi||[],mazzo:r.mazzo||null});
-  });
 
   return `
     <div class="hero">
@@ -545,10 +559,10 @@ function renderLezione(lez){
   `;
 }
 
-function attachLezioneHandlers(lez){
+function attachLezioneHandlers(lez,dati){
   const c=lez.contenuto||{};
   const mazzo=[...(c.vocaboli||[]),...(c.frasi||[])];
-  const esercizi=lez.esercizi||[],recall=lez.recall||{};
+  const esercizi=lez.esercizi||[];
 
   document.querySelectorAll("[data-speak]").forEach(el=>{
     el.addEventListener("click",(ev)=>{ev.stopPropagation();parla(el.dataset.speak);
@@ -588,26 +602,39 @@ function attachLezioneHandlers(lez){
     draw();
   }
 
-  const blocchi=[{key:"oggi",titolo:"Oggi",esercizi:esercizi,vuoto:"Questa lezione risale a prima che il quaderno salvasse gli esercizi."}];
-  ["n3","n10","n30"].forEach(k=>{ const r=recall[k]; if(r) blocchi.push({key:k,titolo:`L.${r.lezione_numero}`,esercizi:r.esercizi||[],mazzo:r.mazzo||null}); });
+  // schede: Oggi (esercizi) + Ripasso L.N-3 / N-10 / N-30 (flashcard dirette, calcolate qui, niente dati salvati)
+  const blocchi=[{key:"oggi",tipo:"esercizi",titolo:"Oggi",esercizi:esercizi,
+    vuoto:"Questa lezione risale a prima che il quaderno salvasse gli esercizi."}];
+  [3,10,30].forEach(delta=>{
+    const rifNum=lez.numero-delta;
+    const rif=dati.find(l=>l.numero===rifNum);
+    if(rif) blocchi.push({key:`n${delta}`,tipo:"mazzo",titolo:`L.${rifNum}`,mazzo:mazzoDiLezione(rif),flag:delta===30});
+  });
 
   const seg=document.getElementById("ex-seg");
   seg.innerHTML=blocchi.map((b,i)=>`<button data-i="${i}" class="${i?'':'on'}">${esc(b.titolo)}</button>`).join("");
   const eswrap=document.getElementById("ex-wrap"),exmazzo=document.getElementById("ex-mazzo"),exsub=document.getElementById("ex-sub");
+  const scoreBox=document.querySelector("#esercizi .score");
   const scoreEls={sc:document.getElementById("ex-sc"),sct:document.getElementById("ex-sct")};
 
   function mostraBlocco(b){
-    exsub.textContent = b.mazzo ? "Mazzo da ripassare + esercizi di traduzione" : "";
-    exmazzo.innerHTML="";
-    if(b.mazzo && b.mazzo.length){
-      exmazzo.innerHTML=`<div style="margin-bottom:16px">${renderMazzoFlag(b.mazzo,"card_n")}
-        <div class="errori-box" style="display:none">
-          <div class="vuoto">Comando da incollare in chat:</div>
-          <code></code>
-          <button class="btn o copia-btn">Copia il comando</button>
-        </div></div>`;
-      attachMazzoFlag(exmazzo, `ERRORI ripasso 30`);
+    exmazzo.innerHTML="";eswrap.innerHTML="";
+    if(b.tipo==="mazzo"){
+      exsub.textContent="Rivedi vocaboli e frasi di questa lezione";
+      scoreBox.style.display="none";
+      if(!b.mazzo.length){ eswrap.innerHTML=`<div class="vuoto">Nessun contenuto trovato.</div>`; return; }
+      if(b.flag){
+        exmazzo.innerHTML=`${renderMazzoFlag(b.mazzo,"card_n")}
+          <div class="errori-box" style="display:none"><div class="vuoto">Comando da incollare in chat:</div><code></code><button class="btn o copia-btn">Copia il comando</button></div>`;
+        attachMazzoFlag(exmazzo,"ERRORI ripasso 30");
+      } else {
+        exmazzo.innerHTML=renderMazzoPlain(b.mazzo);
+        attachSpeakIn(exmazzo);
+      }
+      return;
     }
+    exsub.textContent="";
+    scoreBox.style.display="flex";
     if(!b.esercizi.length){
       eswrap.innerHTML=`<div class="vuoto">${b.vuoto||"Non disponibile."}</div>`;
       scoreEls.sc.textContent="0";scoreEls.sct.textContent="su 0";
