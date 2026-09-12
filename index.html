@@ -392,12 +392,22 @@ function renderLezione(lez) {
 
   const mazzo = [...vocaboli, ...frasi];
 
-  const bloccoRecall = (chiave, etichetta) => {
+  const bloccoRecall = (chiave) => {
     const r = recall[chiave];
     if (!r) return "";
+    const mazzoR30 = (r.mazzo || []).length ? `
+      ${r.mazzo.map(v => `
+        <div class="voce">
+          <button class="speak-mini" data-speak="${escapeHtml(v.ko)}" aria-label="Ascolta">🔊</button>
+          <span class="indice-num" style="min-width:22px">${v.card_n}</span>
+          <span class="ko" style="flex:1">${escapeHtml(v.ko)}</span>
+          <span class="it">${escapeHtml(v.it)}</span>
+        </div>`).join("")}
+      <div class="vuoto-blocco" style="margin-top:8px">Per riferire gli errori: "ERRORI ripasso 30: 2, 7" (i numeri qui sopra).</div>` : "";
     return `
     <section class="blocco">
       <div class="etichetta">Recall — Lezione ${r.lezione_numero}${r.titolo ? " · " + escapeHtml(r.titolo) : ""}</div>
+      ${mazzoR30}
       ${renderBloccoEsercizi(r.esercizi || [], `${chiave}`)}
     </section>`;
   };
