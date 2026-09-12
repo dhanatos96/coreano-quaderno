@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3F6659">
+<meta name="description" content="Le lezioni di coreano, sempre a portata di mano.">
+<title>Quaderno di coreano</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Coreano">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#22282A;
+    --ink-soft:#5B615F;
+    --paper:#EDEEE4;
+    --paper-raised:#F6F5EE;
+    --line:#D7D3C3;
+    --celadon:#3F6659;
+    --celadon-soft:#E4EBE6;
+    --brick:#A6503A;
+    --brick-soft:#F3E4DF;
+    --gold:#C99B4A;
+    --serif:'Source Serif 4', Georgia, serif;
+    --sans:'Noto Sans KR', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    font-size:17px;
+    line-height:1.55;
+    -webkit-tap-highlight-color:transparent;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  a{color:inherit;}
+  button{font:inherit;color:inherit;}
+  .wrap{max-width:640px;margin:0 auto;padding:0 20px 64px;}
+
+  header.top{
+    position:sticky;top:0;z-index:5;
+    background:var(--paper);
+    border-bottom:1px solid var(--line);
+    padding:calc(env(safe-area-inset-top) + 14px) 20px 14px;
+  }
+  header.top .row{max-width:640px;margin:0 auto;display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
+  header.top h1{
+    font-family:var(--sans);font-weight:700;font-size:19px;letter-spacing:.01em;
+    margin:0;
+  }
+  header.top .meta{font-family:var(--sans);font-size:13px;color:var(--ink-soft);}
+  .icon-btn{
+    background:none;border:none;padding:6px;cursor:pointer;color:var(--celadon);
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  /* ---- elenco lezioni ---- */
+  .indice{margin-top:8px;}
+  .indice-riga{
+    display:flex;align-items:baseline;gap:14px;
+    padding:16px 0;border-bottom:1px solid var(--line);
+    cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;
+    width:100%;text-align:left;
+  }
+  .indice-num{
+    font-family:var(--sans);font-weight:700;font-size:14px;color:var(--gold);
+    min-width:28px;flex-shrink:0;
+  }
+  .indice-corpo{flex:1;min-width:0;}
+  .indice-titolo{font-size:17px;}
+  .indice-sub{font-family:var(--sans);font-size:12.5px;color:var(--ink-soft);margin-top:3px;}
+  .badge{
+    display:inline-block;font-family:var(--sans);font-size:11px;font-weight:500;
+    padding:2px 8px;border-radius:2px;letter-spacing:.02em;
+  }
+  .badge.gram{background:var(--celadon-soft);color:var(--celadon);}
+  .badge.sit{background:var(--brick-soft);color:var(--brick);}
+
+  .stato-msg{font-family:var(--sans);color:var(--ink-soft);padding:40px 0;text-align:center;font-size:14.5px;}
+  .stato-msg button{
+    margin-top:14px;background:var(--celadon);color:var(--paper-raised);border:none;
+    padding:9px 18px;border-radius:3px;font-family:var(--sans);font-size:14px;cursor:pointer;
+  }
+
+  /* ---- vista lezione ---- */
+  .torna{
+    display:inline-flex;align-items:center;gap:6px;background:none;border:none;
+    font-family:var(--sans);font-size:14px;color:var(--celadon);cursor:pointer;
+    padding:16px 0 4px;
+  }
+  .lez-head{padding:6px 0 18px;}
+  .lez-head h2{font-size:23px;margin:2px 0 4px;line-height:1.3;}
+  .lez-head .sub{font-family:var(--sans);font-size:13px;color:var(--ink-soft);display:flex;gap:8px;align-items:center;}
+
+  section.blocco{padding:22px 0;border-top:1px solid var(--line);}
+  section.blocco > .etichetta{
+    font-family:var(--sans);font-size:12.5px;font-weight:700;color:var(--celadon);
+    letter-spacing:.03em;margin-bottom:12px;
+  }
+
+  .voce{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px dashed var(--line);}
+  .voce:last-child{border-bottom:none;}
+  .voce .ko{font-family:var(--sans);font-size:17px;}
+  .voce .it{color:var(--ink-soft);font-size:15px;text-align:right;}
+  .speak-mini{background:none;border:none;color:var(--celadon);padding:0 0 0 10px;cursor:pointer;flex-shrink:0;}
+
+  .gram-punto{padding:8px 0;font-size:15.5px;}
+  .gram-punto::before{content:"—  ";color:var(--gold);}
+
+  .dialogo{display:flex;flex-direction:column;gap:10px;}
+  .battuta{max-width:82%;padding:10px 13px;border-radius:3px;cursor:pointer;}
+  .battuta .chi{font-family:var(--sans);font-size:11px;color:var(--ink-soft);margin-bottom:3px;}
+  .battuta .ko{font-family:var(--sans);font-size:16px;}
+  .battuta .it{font-size:14px;color:var(--ink-soft);margin-top:3px;}
+  .battuta.studente{align-self:flex-end;background:var(--celadon-soft);text-align:right;}
+  .battuta.altro{align-self:flex-start;background:var(--paper-raised);border:1px solid var(--line);}
+
+  .flash-card{
+    background:var(--paper-raised);border:1px solid var(--line);border-radius:4px;
+    padding:34px 20px;text-align:center;cursor:pointer;min-height:120px;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;
+  }
+  .flash-card .ko{font-family:var(--sans);font-size:26px;}
+  .flash-card .it{color:var(--ink-soft);font-size:16px;}
+  .flash-nav{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-family:var(--sans);}
+  .flash-nav .cnt{font-size:13px;color:var(--ink-soft);}
+  .flash-nav button{background:none;border:1px solid var(--line);border-radius:3px;padding:7px 14px;cursor:pointer;}
+
+  .es{padding:16px 0;border-bottom:1px dashed var(--line);}
+  .es:last-child{border-bottom:none;}
+  .es .consegna{font-size:16px;margin-bottom:10px;}
+  .es .frase-errata{
+    font-family:var(--sans);background:var(--brick-soft);color:var(--brick);
+    padding:8px 12px;border-radius:3px;margin-bottom:10px;font-size:15.5px;
+  }
+  .opzioni{display:flex;flex-direction:column;gap:8px;}
+  .opzione{
+    font-family:var(--sans);text-align:left;background:var(--paper-raised);
+    border:1px solid var(--line);border-radius:3px;padding:10px 13px;cursor:pointer;font-size:15px;
+  }
+  .opzione.corretta{background:var(--celadon-soft);border-color:var(--celadon);}
+  .opzione.sbagliata{background:var(--brick-soft);border-color:var(--brick);}
+  .opzione:disabled{cursor:default;}
+  .mostra-btn{
+    font-family:var(--sans);background:none;border:1px solid var(--celadon);color:var(--celadon);
+    padding:8px 14px;border-radius:3px;cursor:pointer;font-size:14px;
+  }
+  .risposta-box{margin-top:10px;padding:10px 13px;background:var(--celadon-soft);border-radius:3px;}
+  .risposta-box .ko{font-family:var(--sans);font-size:16px;margin-bottom:4px;}
+  .spiegazione{font-size:14px;color:var(--ink-soft);margin-top:6px;}
+
+  .vuoto-blocco{font-family:var(--sans);font-size:13.5px;color:var(--ink-soft);font-style:normal;}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="row">
+    <h1 id="titolo-header">Quaderno di coreano</h1>
+    <button class="icon-btn" id="btn-refresh" title="Aggiorna" aria-label="Aggiorna">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v6h-6"/></svg>
+    </button>
+  </div>
+</header>
+<div class="wrap" id="app"></div>
+
+<script>
+const SUPABASE_URL = "https://zhmdzumtvqlirbcnsciz.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpobWR6dW10dnFsaXJiY25zY2l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyOTgzODgsImV4cCI6MjA5Njg3NDM4OH0.Q8WdBKE0NZ086VQJgONUvqgNAiIf_koG2OMOlK4PcJk";
+
+let lezioni = null; // cache in memoria per la sessione
+let voci = [];
+if ("speechSynthesis" in window) {
+  const loadVoci = () => { voci = speechSynthesis.getVoices(); };
+  loadVoci();
+  speechSynthesis.onvoiceschanged = loadVoci;
+}
+
+function parla(testo) {
+  if (!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(testo);
+  u.lang = "ko-KR";
+  const voceKo = voci.find(v => v.lang === "ko-KR") || voci.find(v => v.lang && v.lang.startsWith("ko"));
+  if (voceKo) u.voice = voceKo;
+  speechSynthesis.speak(u);
+}
+
+async function caricaLezioni(forza) {
+  if (lezioni && !forza) return lezioni;
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/lezioni?select=numero,data,tipo,titolo,contenuto,esercizi&order=numero.desc`,
+    { headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "Accept-Profile": "coreano"
+      } }
+  );
+  if (!res.ok) throw new Error(String(res.status));
+  lezioni = await res.json();
+  return lezioni;
+}
+
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+
+function dataItaliana(iso) {
+  if (!iso) return "";
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("it-IT", { day:"numeric", month:"long", year:"numeric" });
+}
+
+/* ---------------- ROUTING ---------------- */
+
+function currentRoute() {
+  const h = location.hash.replace(/^#\/?/, "");
+  if (h.startsWith("lezione/")) return { view: "lezione", numero: parseInt(h.split("/")[1], 10) };
+  return { view: "elenco" };
+}
+
+async function render() {
+  const app = document.getElementById("app");
+  const header = document.getElementById("titolo-header");
+  const route = currentRoute();
+  try {
+    const dati = await caricaLezioni(false);
+    if (route.view === "elenco") {
+      header.textContent = "Quaderno di coreano";
+      app.innerHTML = renderElenco(dati);
+      attachElencoHandlers(dati);
+    } else {
+      const lez = dati.find(l => l.numero === route.numero);
+      if (!lez) { app.innerHTML = `<div class="stato-msg">Lezione non trovata.</div>`; return; }
+      header.textContent = `Lezione ${lez.numero}`;
+      app.innerHTML = renderLezione(lez);
+      attachLezioneHandlers(lez);
+    }
+  } catch (e) {
+    app.innerHTML = `
+      <div class="stato-msg">
+        Non riesco a raggiungere il quaderno.<br>Controlla la connessione e riprova.
+        <br><button id="btn-riprova">Riprova</button>
+      </div>`;
+    document.getElementById("btn-riprova")?.addEventListener("click", () => render());
+  }
+}
+
+/* ---------------- ELENCO ---------------- */
+
+function renderElenco(dati) {
+  if (!dati.length) return `<div class="stato-msg">Nessuna lezione salvata ancora.</div>`;
+  const righe = dati.map(l => `
+    <button class="indice-riga" data-num="${l.numero}">
+      <span class="indice-num">${l.numero}</span>
+      <span class="indice-corpo">
+        <span class="indice-titolo">${escapeHtml(l.titolo)}</span>
+        <div class="indice-sub">
+          <span class="badge ${l.tipo === "GRAMMATICA" ? "gram" : "sit"}">${l.tipo === "GRAMMATICA" ? "Grammatica" : "Situazione"}</span>
+          &nbsp;·&nbsp;${dataItaliana(l.data)}
+        </div>
+      </span>
+    </button>`).join("");
+  return `<div class="indice">${righe}</div>`;
+}
+
+function attachElencoHandlers() {
+  document.querySelectorAll(".indice-riga").forEach(el => {
+    el.addEventListener("click", () => { location.hash = `#/lezione/${el.dataset.num}`; });
+  });
+}
+
+/* ---------------- LEZIONE ---------------- */
+
+function renderLezione(lez) {
+  const c = lez.contenuto || {};
+  const vocaboli = c.vocaboli || [];
+  const frasi = c.frasi || [];
+  const grammatica = c.grammatica || [];
+  const dialogo = c.dialogo || [];
+  const esercizi = lez.esercizi || [];
+
+  const mazzo = [...vocaboli, ...frasi];
+
+  return `
+    <button class="torna" id="btn-torna">← Tutte le lezioni</button>
+    <div class="lez-head">
+      <div class="sub">
+        <span class="badge ${lez.tipo === "GRAMMATICA" ? "gram" : "sit"}">${lez.tipo === "GRAMMATICA" ? "Grammatica" : "Situazione"}</span>
+        ${dataItaliana(lez.data)}
+      </div>
+      <h2>${escapeHtml(lez.titolo)}</h2>
+    </div>
+
+    ${vocaboli.length ? `
+    <section class="blocco">
+      <div class="etichetta">Vocabolario base</div>
+      ${vocaboli.map(v => rigaVoce(v)).join("")}
+    </section>` : ""}
+
+    ${frasi.length ? `
+    <section class="blocco">
+      <div class="etichetta">Frasi comuni</div>
+      ${frasi.map(v => rigaVoce(v)).join("")}
+    </section>` : ""}
+
+    ${grammatica.length ? `
+    <section class="blocco">
+      <div class="etichetta">Grammatica e particolarità</div>
+      ${grammatica.map(p => `<div class="gram-punto">${escapeHtml(p)}</div>`).join("")}
+    </section>` : ""}
+
+    ${dialogo.length ? `
+    <section class="blocco">
+      <div class="etichetta">Dialogo</div>
+      <div class="dialogo">
+        ${dialogo.map(b => `
+          <div class="battuta ${b.chi === "studente" ? "studente" : "altro"}" data-speak="${escapeHtml(b.ko)}">
+            <div class="chi">${escapeHtml(b.chi)}</div>
+            <div class="ko">${escapeHtml(b.ko)}</div>
+            <div class="it">${escapeHtml(b.it)}</div>
+          </div>`).join("")}
+      </div>
+    </section>` : ""}
+
+    ${mazzo.length ? `
+    <section class="blocco">
+      <div class="etichetta">Flashcard</div>
+      <div id="flash-wrap"></div>
+    </section>` : ""}
+
+    <section class="blocco">
+      <div class="etichetta">Esercizi</div>
+      ${esercizi.length ? esercizi.map((e, i) => renderEsercizio(e, i)).join("")
+        : `<div class="vuoto-blocco">Esercizi non disponibili: questa lezione risale a prima che il quaderno li salvasse.</div>`}
+    </section>
+  `;
+}
+
+function rigaVoce(v) {
+  return `
+    <div class="voce">
+      <button class="speak-mini" data-speak="${escapeHtml(v.ko)}" aria-label="Ascolta">🔊</button>
+      <span class="ko" style="flex:1">${escapeHtml(v.ko)}</span>
+      <span class="it">${escapeHtml(v.it)}</span>
+    </div>`;
+}
+
+function renderEsercizio(e, i) {
+  if (e.tipo === "scelta") {
+    return `
+      <div class="es" data-idx="${i}" data-tipo="scelta">
+        <div class="consegna">${escapeHtml(e.consegna)}</div>
+        <div class="opzioni">
+          ${(e.opzioni || []).map((op, j) => `<button class="opzione" data-j="${j}">${escapeHtml(op)}</button>`).join("")}
+        </div>
+        <div class="spiegazione" style="display:none"></div>
+      </div>`;
+  }
+  if (e.tipo === "correzione") {
+    return `
+      <div class="es" data-idx="${i}" data-tipo="correzione">
+        <div class="consegna">${escapeHtml(e.consegna)}</div>
+        <div class="frase-errata">${escapeHtml(e.frase)}</div>
+        <button class="mostra-btn">Mostra correzione</button>
+        <div class="risposta-box" style="display:none"></div>
+      </div>`;
+  }
+  // produzione (default)
+  return `
+    <div class="es" data-idx="${i}" data-tipo="produzione">
+      <div class="consegna">${escapeHtml(e.consegna)}</div>
+      <button class="mostra-btn">Mostra risposta</button>
+      <div class="risposta-box" style="display:none"></div>
+    </div>`;
+}
+
+function attachLezioneHandlers(lez) {
+  document.getElementById("btn-torna").addEventListener("click", () => { location.hash = "#/"; });
+
+  document.querySelectorAll("[data-speak]").forEach(el => {
+    el.addEventListener("click", (ev) => { ev.stopPropagation(); parla(el.dataset.speak); });
+  });
+
+  // flashcard
+  const c = lez.contenuto || {};
+  const mazzo = [...(c.vocaboli || []), ...(c.frasi || [])];
+  const flashWrap = document.getElementById("flash-wrap");
+  if (flashWrap && mazzo.length) {
+    let idx = 0, girata = false;
+    const draw = () => {
+      const card = mazzo[idx];
+      flashWrap.innerHTML = `
+        <div class="flash-card" id="flash-card">
+          ${girata
+            ? `<div class="it">${escapeHtml(card.it)}</div>`
+            : `<div class="ko">${escapeHtml(card.ko)}</div>`}
+        </div>
+        <div class="flash-nav">
+          <button id="flash-prev">← Precedente</button>
+          <span class="cnt">${idx + 1} / ${mazzo.length}</span>
+          <button id="flash-speak">🔊</button>
+          <button id="flash-next">Successiva →</button>
+        </div>`;
+      document.getElementById("flash-card").addEventListener("click", () => { girata = !girata; draw(); });
+      document.getElementById("flash-prev").addEventListener("click", () => { idx = (idx - 1 + mazzo.length) % mazzo.length; girata = false; draw(); });
+      document.getElementById("flash-next").addEventListener("click", () => { idx = (idx + 1) % mazzo.length; girata = false; draw(); });
+      document.getElementById("flash-speak").addEventListener("click", (ev) => { ev.stopPropagation(); parla(card.ko); });
+    };
+    draw();
+  }
+
+  // esercizi
+  const esercizi = lez.esercizi || [];
+  document.querySelectorAll(".es").forEach(el => {
+    const e = esercizi[parseInt(el.dataset.idx, 10)];
+    if (el.dataset.tipo === "scelta") {
+      el.querySelectorAll(".opzione").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const j = parseInt(btn.dataset.j, 10);
+          el.querySelectorAll(".opzione").forEach((b, k) => {
+            b.disabled = true;
+            if (k === e.corretta) b.classList.add("corretta");
+            else if (k === j) b.classList.add("sbagliata");
+          });
+          const sp = el.querySelector(".spiegazione");
+          sp.textContent = e.spiegazione || "";
+          sp.style.display = "block";
+        });
+      });
+    } else {
+      const btn = el.querySelector(".mostra-btn");
+      btn?.addEventListener("click", () => {
+        const box = el.querySelector(".risposta-box");
+        box.innerHTML = `<div class="ko">${escapeHtml(e.risposta)}</div><div class="spiegazione">${escapeHtml(e.spiegazione || "")}</div>`;
+        box.style.display = "block";
+        btn.style.display = "none";
+      });
+    }
+  });
+}
+
+/* ---------------- avvio ---------------- */
+
+window.addEventListener("hashchange", render);
+window.addEventListener("load", () => {
+  render();
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+});
+document.getElementById("btn-refresh").addEventListener("click", async () => {
+  await caricaLezioni(true);
+  render();
+});
+</script>
+</body>
+</html>
