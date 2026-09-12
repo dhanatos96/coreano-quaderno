@@ -429,56 +429,56 @@ function mazzoDiLezione(rif){
   const c=rif.contenuto||{};
   return [...(c.vocaboli||[]),...(c.frasi||[])].map((v,i)=>({card_n:i+1,ko:v.ko,it:v.it}));
 }
-function renderMazzoPlain(mazzo){
-  return mazzo.map(v=>`
-    <div class="mazzo-riga">
-      <span class="num">${v.card_n}</span>
-      <button class="sp" style="width:26px;height:26px;border-radius:50%;background:var(--accSoft);color:var(--acc);border:none;display:grid;place-items:center;flex:none;cursor:pointer" data-speak="${esc(v.ko)}">${SP}</button>
-      <span class="ko">${esc(v.ko)}</span>
-      <span class="it">${esc(v.it)}</span>
-    </div>`).join("");
-}
-function attachSpeakIn(container){
-  container.querySelectorAll("[data-speak]").forEach(el=>{
-    el.addEventListener("click",(ev)=>{ev.stopPropagation();parla(el.dataset.speak);});
-  });
-}
 
-/* ---------- helper mazzo con flag errori ---------- */
-function renderMazzoFlag(mazzo, idField){
-  return mazzo.map(v=>`
-    <div class="mazzo-riga" data-num="${v[idField]}">
-      <span class="num">${v[idField]}</span>
-      <button class="sp" style="width:26px;height:26px;border-radius:50%;background:var(--accSoft);color:var(--acc);border:none;display:grid;place-items:center;flex:none;cursor:pointer" data-speak="${esc(v.ko)}">${SP}</button>
-      <span class="ko">${esc(v.ko)}</span>
-      <span class="it">${esc(v.it)}</span>
-      <button class="flag" data-num="${v[idField]}" aria-label="Segna come sbagliata">✕</button>
-    </div>`).join("");
+/* ---------- componente flashcard riutilizzabile (con flag errori opzionale) ---------- */
+function creaFlashDeckHTML(idPrefix, conFlag){
+  const flagBtn = conFlag ? `<button class="ib" id="${idPrefix}-flag" aria-label="Segna come sbagliata">✕</button>` : "";
+  const erroriBox = conFlag ? `<div class="errori-box" id="${idPrefix}-errori" style="display:none"><div class="vuoto">Comando da incollare in chat:</div><code></code><button class="btn o copia-btn">Copia il comando</button></div>` : "";
+  return `<div class="flash"><div class="fc" id="${idPrefix}-fc"><div class="front" id="${idPrefix}-ff"></div><div class="back" id="${idPrefix}-fb"></div></div></div>
+    <div class="fnav">${flagBtn}<button class="btn o" id="${idPrefix}-prev">Indietro</button><div class="bar"><i id="${idPrefix}-bar"></i></div><span class="cnt" id="${idPrefix}-cnt"></span><button class="btn o" id="${idPrefix}-spk">Ascolta</button><button class="btn" id="${idPrefix}-next">Avanti</button></div>
+    ${erroriBox}`;
 }
-function attachMazzoFlag(container, comandoPrefix){
+function attachFlashDeck(idPrefix, mazzo, opts){
+  opts=opts||{};
+  let fi=0,fl=false;
   const sbagliate=new Set();
-  const box=container.querySelector(".errori-box");
-  const aggiorna=()=>{
+  const idDi=c=>c.card_n ?? c.n;
+  const aggiornaErrori=()=>{
+    const box=document.getElementById(idPrefix+"-errori");
+    if(!box) return;
     if(!sbagliate.size){ box.style.display="none"; return; }
     box.style.display="block";
-    const numeri=[...sbagliate].sort((a,b)=>a-b).join(", ");
-    box.querySelector("code").textContent=`${comandoPrefix}: ${numeri}`;
+    box.querySelector("code").textContent=`${opts.comandoPrefix}: ${[...sbagliate].sort((a,b)=>a-b).join(", ")}`;
   };
-  container.querySelectorAll(".flag").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      const n=parseInt(btn.dataset.num,10);
-      btn.classList.toggle("on");
-      if(sbagliate.has(n)) sbagliate.delete(n); else sbagliate.add(n);
-      aggiorna();
+  const draw=()=>{
+    const card=mazzo[fi];
+    document.getElementById(idPrefix+"-ff").textContent=card.ko;
+    document.getElementById(idPrefix+"-fb").textContent=card.it;
+    document.getElementById(idPrefix+"-fc").classList.toggle("f",fl);
+    document.getElementById(idPrefix+"-cnt").textContent=`${fi+1}/${mazzo.length}`;
+    document.getElementById(idPrefix+"-bar").style.width=((fi+1)/mazzo.length*100)+"%";
+    if(opts.flag){
+      document.getElementById(idPrefix+"-flag").classList.toggle("on",sbagliate.has(idDi(card)));
+    }
+  };
+  document.getElementById(idPrefix+"-fc").addEventListener("click",()=>{fl=!fl;draw();});
+  document.getElementById(idPrefix+"-prev").addEventListener("click",()=>{fi=(fi-1+mazzo.length)%mazzo.length;fl=false;draw();});
+  document.getElementById(idPrefix+"-next").addEventListener("click",()=>{fi=(fi+1)%mazzo.length;fl=false;draw();});
+  document.getElementById(idPrefix+"-spk").addEventListener("click",()=>parla(mazzo[fi].ko));
+  if(opts.flag){
+    document.getElementById(idPrefix+"-flag").addEventListener("click",()=>{
+      const id=idDi(mazzo[fi]);
+      if(sbagliate.has(id)) sbagliate.delete(id); else sbagliate.add(id);
+      draw();aggiornaErrori();
     });
-  });
-  container.querySelector(".copia-btn")?.addEventListener("click",(e)=>{
-    const testo=box.querySelector("code").textContent;
-    navigator.clipboard?.writeText(testo).then(()=>{
-      e.target.textContent="Copiato ✓";
-      setTimeout(()=>{e.target.textContent="Copia il comando";},1500);
+    document.getElementById(idPrefix+"-errori").querySelector(".copia-btn").addEventListener("click",(e)=>{
+      const testo=document.getElementById(idPrefix+"-errori").querySelector("code").textContent;
+      navigator.clipboard?.writeText(testo).then(()=>{
+        e.target.textContent="Copiato ✓";setTimeout(()=>{e.target.textContent="Copia il comando";},1500);
+      });
     });
-  });
+  }
+  draw();
 }
 
 /* ---------- LEZIONE ---------- */
@@ -623,14 +623,8 @@ function attachLezioneHandlers(lez,dati){
       exsub.textContent="Rivedi vocaboli e frasi di questa lezione";
       scoreBox.style.display="none";
       if(!b.mazzo.length){ eswrap.innerHTML=`<div class="vuoto">Nessun contenuto trovato.</div>`; return; }
-      if(b.flag){
-        exmazzo.innerHTML=`${renderMazzoFlag(b.mazzo,"card_n")}
-          <div class="errori-box" style="display:none"><div class="vuoto">Comando da incollare in chat:</div><code></code><button class="btn o copia-btn">Copia il comando</button></div>`;
-        attachMazzoFlag(exmazzo,"ERRORI ripasso 30");
-      } else {
-        exmazzo.innerHTML=renderMazzoPlain(b.mazzo);
-        attachSpeakIn(exmazzo);
-      }
+      exmazzo.innerHTML=creaFlashDeckHTML("rec-"+b.key, !!b.flag);
+      attachFlashDeck("rec-"+b.key, b.mazzo, b.flag?{flag:true,comandoPrefix:"ERRORI ripasso 30"}:{});
       return;
     }
     exsub.textContent="";
@@ -663,9 +657,8 @@ function renderRipasso(r){
 
     ${(c.grammatica_coperta||[]).length?`<section><div class="card"><div class="sh"><h2>Grammatica coperta</h2></div>${c.grammatica_coperta.map(g=>`<div class="riep-riga">${esc(g)}</div>`).join("")}</div></section>`:""}
 
-    ${deck.length?`<section><div class="card"><div class="sh"><h2>Da ripassare + parole importanti</h2><small>tocca ✕ su quelle sbagliate</small></div>
-      ${renderMazzoFlag(deck,"n")}
-      <div class="errori-box" style="display:none"><div class="vuoto">Comando da incollare in chat:</div><code></code><button class="btn o copia-btn">Copia il comando</button></div>
+    ${deck.length?`<section><div class="card"><div class="sh"><h2>Da ripassare + parole importanti</h2><small>flashcard, con ✕ per segnare le sbagliate</small></div>
+      <div id="ripasso-mazzo"></div>
     </div></section>`:""}
 
     <section><div class="card">
@@ -679,9 +672,11 @@ function renderRipasso(r){
 }
 function attachRipassoHandlers(r){
   const c=r.contenuto||{};
-  document.querySelectorAll("[data-speak]").forEach(el=>{el.addEventListener("click",(ev)=>{ev.stopPropagation();parla(el.dataset.speak);});});
-  const deckBox=[...document.querySelectorAll(".card")].find(card=>card.querySelector(".mazzo-riga"));
-  if(deckBox) attachMazzoFlag(deckBox, "ERRORI ripasso");
+  const deck=r.deck||[];
+  if(deck.length){
+    document.getElementById("ripasso-mazzo").innerHTML=creaFlashDeckHTML("ripasso",true);
+    attachFlashDeck("ripasso",deck,{flag:true,comandoPrefix:"ERRORI ripasso"});
+  }
   const esercizi=c.esercizi||[];
   const eswrap=document.getElementById("ex-wrap");
   const scoreEls={sc:document.getElementById("ex-sc"),sct:document.getElementById("ex-sct")};
