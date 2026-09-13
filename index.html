@@ -190,6 +190,36 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .ric.corretto .ric-strip{border-style:solid;border-color:var(--ok)}
 .ric.corretto .parola.piazzata{background:var(--okSoft);border-color:var(--ok);color:var(--ok)}
 
+/* ---- ripasso flashcard ---- */
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.stat{flex:1 1 calc(50% - 4px);background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--glassLine);border-radius:16px;padding:11px 13px;box-shadow:var(--shadow)}
+.stats.tre .stat{flex:1 1 86px}
+.stat .n{font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.stat .l{font-size:11.5px;color:var(--mute);font-weight:600}
+.stat.ok .n{color:var(--ok)}
+.stat.no .n{color:var(--no)}
+.stat.nu .n{color:var(--acc)}
+.fgrp{margin:0 0 15px}
+.fgrp>label{display:block;font-size:11.5px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.07em;margin:0 0 7px}
+.fgrp .seg{margin-bottom:0;flex-wrap:wrap;overflow:visible}
+.frange{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.frange input{font:inherit;font-size:14px;width:78px;padding:7px 11px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
+.frange span{font-size:13px;color:var(--mute)}
+.fcount{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:14px;color:var(--mute);flex-wrap:wrap}
+.fcount b{color:var(--ink);font-size:22px;font-weight:800;letter-spacing:-.02em}
+.pill{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--accSoft);color:var(--acc)}
+.pill.imparata{background:var(--okSoft);color:var(--ok)}
+.pill.sbagliata{background:var(--noSoft);color:var(--no)}
+.giudizio{display:flex;gap:8px;margin-top:12px}
+.giudizio button{flex:1;font:inherit;font-weight:700;font-size:14.5px;padding:13px 10px;border-radius:16px;cursor:pointer;border:1px solid transparent}
+.giudizio .gno{background:var(--noSoft);color:var(--no)}
+.giudizio .gsi{background:var(--okSoft);color:var(--ok)}
+.giudizio button:active{transform:scale(.97)}
+.fc.rovescio .front{font-family:var(--ui);font-size:19px;font-weight:600;line-height:1.45}
+.fc.rovescio .back{font-family:var(--kr);font-size:clamp(24px,6vw,34px);font-weight:400;line-height:1.3}
+.fhint{text-align:center;font-size:12.5px;color:var(--mute);margin-top:11px}
+.fsync{text-align:center;font-size:12.5px;color:var(--no);margin-top:9px}
+
 footer{text-align:center;color:var(--mute);font-size:12.5px;padding:18px 0 0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 @media (min-width:720px){.page{padding:0 24px 100px}.voc{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
@@ -287,11 +317,83 @@ async function caricaRipassi(forza){
   ripassi=await res.json();return ripassi;
 }
 
+/* ---------- stash flashcard ---------- */
+let flashStash=null;
+const CAMPI_FLASH="id,lezione_numero,card_n,ko,it,tipo,livello,data_lezione,stato,volte_giusta,volte_sbagliata,giuste_di_fila,ultima_revisione";
+async function caricaFlashcard(forza){
+  if(flashStash && !forza) return flashStash;
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/flashcard_stash?select=${CAMPI_FLASH}&order=lezione_numero.asc,card_n.asc`,
+    {headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${SUPABASE_ANON_KEY}`,"Accept-Profile":"coreano"}});
+  if(!res.ok) throw new Error(String(res.status));
+  flashStash=await res.json();return flashStash;
+}
+async function segnaFlashcard(id,esito){
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/segna_flashcard`,{method:"POST",
+    headers:{apikey:SUPABASE_ANON_KEY,Authorization:`Bearer ${SUPABASE_ANON_KEY}`,
+             "Content-Profile":"coreano","Content-Type":"application/json"},
+    body:JSON.stringify({p_id:id,p_esito:esito})});
+  if(!res.ok) throw new Error(String(res.status));
+  const riga=await res.json();
+  if(riga && riga.id && flashStash){
+    const i=flashStash.findIndex(c=>c.id===riga.id);
+    if(i>=0) flashStash[i]=Object.assign({},flashStash[i],riga);
+  }
+  return riga;
+}
+
+/* ---------- filtri del ripasso flashcard ---------- */
+const FILTRI_DEFAULT={giorni:"tutti",livello:"TUTTI",stato:"tutte",tipo:"tutti",da:"",a:"",ordine:"casuale",limite:20,verso:"ko"};
+let filtriFlash=Object.assign({},FILTRI_DEFAULT);
+try{const salv=localStorage.getItem("filtriFlash");if(salv)filtriFlash=Object.assign({},FILTRI_DEFAULT,JSON.parse(salv));}catch(e){}
+const salvaFiltri=()=>{try{localStorage.setItem("filtriFlash",JSON.stringify(filtriFlash));}catch(e){}};
+
+function applicaFiltri(tutte,senzaLimite){
+  let out=tutte.slice();
+  if(filtriFlash.giorni!=="tutti"){
+    const gg=parseInt(filtriFlash.giorni,10);
+    const lim=new Date();lim.setHours(0,0,0,0);lim.setDate(lim.getDate()-gg+1);
+    out=out.filter(c=>c.data_lezione && new Date(c.data_lezione+"T00:00:00")>=lim);
+  }
+  if(filtriFlash.livello!=="TUTTI") out=out.filter(c=>c.livello===filtriFlash.livello);
+  if(filtriFlash.stato==="sbagliate")      out=out.filter(c=>c.stato==="sbagliata");
+  else if(filtriFlash.stato==="nuove")     out=out.filter(c=>c.stato==="nuova");
+  else if(filtriFlash.stato==="imparate")  out=out.filter(c=>c.stato==="imparata");
+  else if(filtriFlash.stato==="daimparare")out=out.filter(c=>c.stato!=="imparata");
+  if(filtriFlash.tipo!=="tutti") out=out.filter(c=>c.tipo===filtriFlash.tipo);
+  const da=parseInt(filtriFlash.da,10), a=parseInt(filtriFlash.a,10);
+  if(!isNaN(da)) out=out.filter(c=>c.lezione_numero>=da);
+  if(!isNaN(a))  out=out.filter(c=>c.lezione_numero<=a);
+  if(filtriFlash.ordine==="cronologico")
+    out.sort((x,y)=>x.lezione_numero-y.lezione_numero||x.card_n-y.card_n);
+  else if(filtriFlash.ordine==="difficili")
+    out.sort((x,y)=>(y.volte_sbagliata-y.volte_giusta)-(x.volte_sbagliata-x.volte_giusta)
+                  || y.volte_sbagliata-x.volte_sbagliata
+                  || x.lezione_numero-y.lezione_numero);
+  else out=shuffle(out);
+  if(!senzaLimite && filtriFlash.limite) out=out.slice(0,filtriFlash.limite);
+  return out;
+}
+
+function descrizioneFiltri(){
+  const p=[];
+  if(filtriFlash.giorni!=="tutti") p.push(`ultimi ${filtriFlash.giorni} giorni`);
+  if(filtriFlash.livello!=="TUTTI") p.push(filtriFlash.livello);
+  const etichetteStato={sbagliate:"solo sbagliate",nuove:"solo mai viste",imparate:"solo imparate",daimparare:"da imparare"};
+  if(etichetteStato[filtriFlash.stato]) p.push(etichetteStato[filtriFlash.stato]);
+  if(filtriFlash.tipo!=="tutti") p.push(filtriFlash.tipo==="vocabolo"?"vocaboli":"frasi");
+  const da=parseInt(filtriFlash.da,10), a=parseInt(filtriFlash.a,10);
+  if(!isNaN(da)||!isNaN(a)) p.push(`L.${isNaN(da)?"":da}–${isNaN(a)?"":a}`);
+  if(filtriFlash.verso==="it") p.push("IT → 한");
+  return p.length?p.join(" · "):"tutte le parole";
+}
+
 /* ---------- routing ---------- */
 function currentRoute(){
   const h=location.hash.replace(/^#\/?/,"");
   if(h.startsWith("lezione/")) return {view:"lezione",numero:parseInt(h.split("/")[1],10)};
   if(h==="ripassi") return {view:"ripassi"};
+  if(h==="flashcard") return {view:"flashcard"};
+  if(h==="flashcard/via") return {view:"flashvia"};
   if(h.startsWith("ripasso/")) return {view:"ripasso",id:parseInt(h.split("/")[1],10)};
   return {view:"elenco"};
 }
@@ -324,6 +426,17 @@ async function render(){
       setHeader(()=>{location.hash="#/"},'Lezioni','Ripassi generali');
       app.innerHTML=renderElencoRipassi(dati);
       attachElencoRipassiHandlers();
+    } else if(route.view==="flashcard"){
+      const tutte=await caricaFlashcard(false);
+      setHeader(()=>{location.hash="#/"},'Lezioni','Ripasso flashcard');
+      app.innerHTML=renderFiltriFlash(tutte);
+      attachFiltriFlashHandlers(tutte);
+    } else if(route.view==="flashvia"){
+      await caricaFlashcard(false);
+      if(!sessioneFlash || !sessioneFlash.mazzo.length){ location.replace("#/flashcard"); return; }
+      setHeader(()=>{location.hash="#/flashcard"},'Filtri','Ripasso flashcard');
+      app.innerHTML=renderSessioneFlash();
+      attachSessioneFlashHandlers();
     } else if(route.view==="ripasso"){
       const dati=await caricaRipassi(false);
       const r=dati.find(x=>x.id===route.id);
@@ -353,7 +466,7 @@ function renderElenco(dati){
 
   const link=`<div class="hero"><div class="meta"><span class="tag">Percorso</span></div><h1>매일<br>한국어 공부</h1><p>Le tue lezioni di coreano, in ordine. Tocca per rivederle quando vuoi.</p></div>
     ${filtri}
-    <div class="btnrow" style="margin-bottom:18px"><button class="btn o" id="btn-ripassi">Ripassi generali →</button></div>`;
+    <div class="btnrow" style="margin-bottom:18px"><button class="btn" id="btn-flashcard">Ripasso flashcard →</button><button class="btn o" id="btn-ripassi">Ripassi generali →</button></div>`;
 
   const filtrate = filtroLivello==="TUTTI" ? dati : dati.filter(l=>(l.curriculum&&l.curriculum.livello)===filtroLivello);
   if(!filtrate.length) return link+`<div class="card vuoto">${dati.length?`Nessuna lezione ancora per il livello ${filtroLivello}.`:"Nessuna lezione salvata ancora."}</div>`;
@@ -371,6 +484,7 @@ function renderElenco(dati){
 function attachElencoHandlers(){
   document.querySelectorAll(".elenco-riga").forEach(el=>{el.addEventListener("click",()=>{location.hash=`#/lezione/${el.dataset.num}`;});});
   document.getElementById("btn-ripassi")?.addEventListener("click",()=>{location.hash="#/ripassi";});
+  document.getElementById("btn-flashcard")?.addEventListener("click",()=>{location.hash="#/flashcard";});
   document.querySelectorAll("[data-lv]").forEach(btn=>{
     btn.addEventListener("click",()=>{ filtroLivello=btn.dataset.lv; render(); });
   });
@@ -796,6 +910,206 @@ function attachLezioneHandlers(lez,dati){
   mostraBlocco(blocchi[0]);
 }
 
+/* ---------- RIPASSO FLASHCARD (stash di tutte le lezioni) ---------- */
+let sessioneFlash=null;
+
+function segGruppo(etichetta,chiave,opzioni){
+  return `<div class="fgrp"><label>${etichetta}</label><div class="seg">${opzioni.map(o=>
+    `<button data-f="${chiave}" data-v="${o.v}" class="${String(filtriFlash[chiave])===String(o.v)?"on":""}">${esc(o.t)}</button>`
+  ).join("")}</div></div>`;
+}
+
+function renderFiltriFlash(tutte){
+  const n=st=>tutte.filter(c=>c.stato===st).length;
+  const stats=`<div class="stats">
+    <div class="stat"><div class="n">${tutte.length}</div><div class="l">in totale</div></div>
+    <div class="stat nu"><div class="n">${n("nuova")}</div><div class="l">mai viste</div></div>
+    <div class="stat no"><div class="n">${n("sbagliata")}</div><div class="l">sbagliate</div></div>
+    <div class="stat ok"><div class="n">${n("imparata")}</div><div class="l">imparate</div></div>
+  </div>`;
+
+  if(!tutte.length){
+    return `<div class="hero"><div class="meta"><span class="tag">Ripasso flashcard</span></div><h1>복습 카드</h1>
+      <p>Tutte le parole e le frasi di tutte le lezioni, in un unico mazzo.</p></div>
+      <div class="card vuoto">Nessuna flashcard nello stash. Aggiungi una lezione e torna qui.</div>`;
+  }
+
+  const livelliPresenti=[...new Set(tutte.map(c=>c.livello).filter(Boolean))].sort();
+  const numeri=tutte.map(c=>c.lezione_numero);
+  const minL=Math.min(...numeri), maxL=Math.max(...numeri);
+
+  const filtri=`<div class="card">
+    <div class="sh"><h2>Filtri</h2><small>scegli cosa ripassare</small></div>
+    ${segGruppo("Periodo","giorni",[{v:"tutti",t:"Tutte"},{v:"7",t:"7 giorni"},{v:"14",t:"14 giorni"},{v:"30",t:"30 giorni"},{v:"90",t:"90 giorni"}])}
+    ${livelliPresenti.length?segGruppo("Livello","livello",[{v:"TUTTI",t:"Tutti"},...livelliPresenti.map(l=>({v:l,t:l}))]):""}
+    ${segGruppo("Stato","stato",[{v:"tutte",t:"Tutte"},{v:"sbagliate",t:"Solo sbagliate"},{v:"daimparare",t:"Da imparare"},{v:"nuove",t:"Mai viste"},{v:"imparate",t:"Solo imparate"}])}
+    ${segGruppo("Tipo","tipo",[{v:"tutti",t:"Tutti"},{v:"vocabolo",t:"Vocaboli"},{v:"frase",t:"Frasi"}])}
+    <div class="fgrp"><label>Intervallo di lezioni</label>
+      <div class="frange">
+        <span>dalla</span><input type="number" id="fl-da" inputmode="numeric" min="${minL}" max="${maxL}" placeholder="${minL}" value="${esc(filtriFlash.da)}">
+        <span>alla</span><input type="number" id="fl-a" inputmode="numeric" min="${minL}" max="${maxL}" placeholder="${maxL}" value="${esc(filtriFlash.a)}">
+        <button class="btn o" id="fl-range-reset">Tutte</button>
+      </div>
+    </div>
+    ${segGruppo("Ordine","ordine",[{v:"casuale",t:"Casuale"},{v:"cronologico",t:"Cronologico"},{v:"difficili",t:"Prima le più sbagliate"}])}
+    ${segGruppo("Quante carte","limite",[{v:10,t:"10"},{v:20,t:"20"},{v:50,t:"50"},{v:0,t:"Tutte"}])}
+    ${segGruppo("Verso","verso",[{v:"ko",t:"한 → IT"},{v:"it",t:"IT → 한"}])}
+    <div class="fcount">
+      <span><b id="fl-tot">0</b> carte corrispondono</span>
+      <button class="btn" id="fl-avvia">Inizia il ripasso</button>
+    </div>
+  </div>`;
+
+  return `<div class="hero"><div class="meta"><span class="tag">Ripasso flashcard</span><span>lezioni ${minL}–${maxL}</span></div>
+    <h1>복습 카드</h1><p>Tutte le parole e le frasi di tutte le lezioni, in un unico mazzo. Filtra e ripassa.</p></div>
+    ${stats}${filtri}`;
+}
+
+function attachFiltriFlashHandlers(tutte){
+  const tot=document.getElementById("fl-tot");
+  const avvia=document.getElementById("fl-avvia");
+  if(!tot) return;
+  const aggiorna=()=>{
+    const quante=applicaFiltri(tutte,true).length;
+    const mostrate=filtriFlash.limite?Math.min(quante,filtriFlash.limite):quante;
+    tot.textContent=mostrate;
+    tot.nextSibling.textContent=quante>mostrate?` carte su ${quante} che corrispondono`:" carte corrispondono";
+    avvia.disabled=!quante;
+  };
+  document.querySelectorAll("[data-f]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const k=btn.dataset.f;
+      const v=(k==="limite")?parseInt(btn.dataset.v,10):btn.dataset.v;
+      filtriFlash[k]=v;salvaFiltri();
+      document.querySelectorAll(`[data-f="${k}"]`).forEach(b=>b.classList.remove("on"));
+      btn.classList.add("on");
+      aggiorna();
+    });
+  });
+  const da=document.getElementById("fl-da"), a=document.getElementById("fl-a");
+  [da,a].forEach(inp=>inp.addEventListener("input",()=>{
+    filtriFlash.da=da.value.trim();filtriFlash.a=a.value.trim();salvaFiltri();aggiorna();
+  }));
+  document.getElementById("fl-range-reset").addEventListener("click",()=>{
+    da.value="";a.value="";filtriFlash.da="";filtriFlash.a="";salvaFiltri();aggiorna();
+  });
+  avvia.addEventListener("click",()=>{
+    const mazzo=applicaFiltri(tutte,false);
+    if(!mazzo.length) return;
+    sessioneFlash={mazzo,i:0,giusti:0,sbagliati:0,esiti:new Map(),desc:descrizioneFiltri()};
+    location.hash="#/flashcard/via";
+  });
+  aggiorna();
+}
+
+function renderSessioneFlash(){
+  return `<div class="hero"><div class="meta"><span class="tag">Ripasso flashcard</span><span>${esc(sessioneFlash.desc)}</span></div></div>
+    <div class="card" id="fl-card">
+      <div class="sh"><h2 id="fl-tit">&nbsp;</h2><small id="fl-pill"></small></div>
+      <div class="flash"><div class="fc" id="fl-fc"><div class="front" id="fl-ff"></div><div class="back" id="fl-fb"></div></div></div>
+      <div class="fnav">
+        <button class="btn o" id="fl-prev">Indietro</button>
+        <div class="bar"><i id="fl-bar"></i></div>
+        <span class="cnt" id="fl-cnt"></span>
+        <button class="btn o" id="fl-spk">Ascolta</button>
+      </div>
+      <div class="giudizio"><button class="gno" id="fl-no">✕ Sbagliata</button><button class="gsi" id="fl-si">✓ Giusta</button></div>
+      <div class="fhint" id="fl-hint">Tocca la carta per girarla</div>
+      <div class="fsync" id="fl-sync" style="display:none"></div>
+      <div class="score"><span>Giuste in questa sessione</span><span><b id="fl-g">0</b> <span id="fl-gt"></span></span></div>
+    </div>`;
+}
+
+function attachSessioneFlashHandlers(){
+  const S=sessioneFlash;
+  let girata=false;
+  const el=id=>document.getElementById(id);
+  const fc=el("fl-fc");
+
+  const draw=()=>{
+    const c=S.mazzo[S.i];
+    const rovescio=filtriFlash.verso==="it";
+    el("fl-ff").textContent=rovescio?(c.it||"—"):c.ko;
+    el("fl-fb").textContent=rovescio?c.ko:(c.it||"—");
+    fc.classList.toggle("rovescio",rovescio);
+    fc.classList.toggle("f",girata);
+    el("fl-tit").textContent=`L.${c.lezione_numero} · ${c.tipo==="frase"?"frase":"vocabolo"}`;
+    const pill=el("fl-pill");
+    const esito=S.esiti.get(c.id);
+    const stato=esito==="giusto"?"imparata":esito==="sbagliato"?"sbagliata":c.stato;
+    pill.className="pill "+(stato==="nuova"?"":stato);
+    pill.textContent=stato==="nuova"?"mai vista":stato==="imparata"?"imparata":"da ripassare";
+    el("fl-cnt").textContent=`${S.i+1}/${S.mazzo.length}`;
+    el("fl-bar").style.width=((S.i+1)/S.mazzo.length*100)+"%";
+    el("fl-g").textContent=S.giusti;
+    el("fl-gt").textContent=`su ${S.giusti+S.sbagliati}`;
+    el("fl-prev").disabled=S.i===0;
+    el("fl-hint").textContent=girata?"Sapevi la risposta?":"Tocca la carta per girarla";
+  };
+
+  const avanti=()=>{
+    if(S.i>=S.mazzo.length-1){ mostraRiepilogo(); return; }
+    S.i++;girata=false;draw();
+  };
+
+  const registra=async esito=>{
+    const c=S.mazzo[S.i];
+    const prima=S.esiti.get(c.id);
+    if(prima==="giusto") S.giusti--; else if(prima==="sbagliato") S.sbagliati--;
+    if(esito==="giusto") S.giusti++; else S.sbagliati++;
+    S.esiti.set(c.id,esito);
+    avanti();
+    try{
+      const riga=await segnaFlashcard(c.id,esito);
+      if(riga&&riga.stato) c.stato=riga.stato;
+      el("fl-sync") && (el("fl-sync").style.display="none");
+    }catch(e){
+      const w=el("fl-sync");
+      if(w){w.style.display="block";w.textContent="Non riesco a salvare l'esito sul quaderno: controlla la connessione.";}
+    }
+  };
+
+  function mostraRiepilogo(){
+    const fatte=S.giusti+S.sbagliati;
+    const sbagliate=S.mazzo.filter(c=>S.esiti.get(c.id)==="sbagliato");
+    el("fl-card").innerHTML=`
+      <div class="sh"><h2>Fine del mazzo</h2></div>
+      <div class="stats tre" style="margin:0 0 6px">
+        <div class="stat"><div class="n">${S.mazzo.length}</div><div class="l">carte viste</div></div>
+        <div class="stat ok"><div class="n">${S.giusti}</div><div class="l">giuste</div></div>
+        <div class="stat no"><div class="n">${S.sbagliati}</div><div class="l">sbagliate</div></div>
+      </div>
+      ${fatte?`<div class="vuoto" style="margin-top:10px">Le carte segnate come giuste diventano <b>imparate</b> dopo due volte giuste di fila.</div>`:
+              `<div class="vuoto" style="margin-top:10px">Non hai segnato nessun esito in questo giro.</div>`}
+      <div class="btnrow">
+        ${sbagliate.length?`<button class="btn" id="fl-rifai">Rifai le ${sbagliate.length} sbagliate</button>`:""}
+        <button class="btn o" id="fl-nuovo">Nuovo mazzo</button>
+        <button class="btn o" id="fl-filtri">Cambia i filtri</button>
+      </div>`;
+    el("fl-rifai")?.addEventListener("click",()=>{
+      sessioneFlash={mazzo:shuffle(sbagliate),i:0,giusti:0,sbagliati:0,esiti:new Map(),desc:"ripasso delle sbagliate"};
+      render();
+    });
+    el("fl-nuovo")?.addEventListener("click",()=>{
+      const mazzo=applicaFiltri(flashStash||[],false);
+      if(!mazzo.length){location.hash="#/flashcard";return;}
+      sessioneFlash={mazzo,i:0,giusti:0,sbagliati:0,esiti:new Map(),desc:descrizioneFiltri()};
+      render();
+    });
+    el("fl-filtri")?.addEventListener("click",()=>{location.hash="#/flashcard";});
+  }
+
+  fc.addEventListener("click",()=>{
+    girata=!girata;draw();
+    if(girata) parla(S.mazzo[S.i].ko);
+  });
+  el("fl-prev").addEventListener("click",()=>{if(S.i>0){S.i--;girata=false;draw();}});
+  el("fl-spk").addEventListener("click",()=>parla(S.mazzo[S.i].ko));
+  el("fl-si").addEventListener("click",()=>registra("giusto"));
+  el("fl-no").addEventListener("click",()=>registra("sbagliato"));
+  draw();
+}
+
 /* ---------- RIPASSO ---------- */
 function renderRipasso(r){
   const c=r.contenuto||{};
@@ -841,7 +1155,7 @@ window.addEventListener("load",()=>{
   if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 });
 document.getElementById("btn-refresh").addEventListener("click",async()=>{
-  await Promise.all([caricaLezioni(true).catch(()=>{}),caricaRipassi(true).catch(()=>{})]);
+  await Promise.all([caricaLezioni(true).catch(()=>{}),caricaRipassi(true).catch(()=>{}),caricaFlashcard(true).catch(()=>{})]);
   render();
 });
 </script>
