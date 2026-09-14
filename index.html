@@ -508,6 +508,18 @@ function attachElencoRipassiHandlers(){
 }
 
 /* ---------- helper esercizi (condiviso) ---------- */
+/* Nelle lezioni salvate la risposta giusta sta quasi sempre in prima posizione
+   (26 esercizi su 28 hanno corretta=0). Rimescoliamo le opzioni a ogni apertura
+   e rimappiamo l'indice della risposta corretta. */
+function mescolaOpzioni(esercizi){
+  return (esercizi||[]).map(e=>{
+    if(e.tipo!=="scelta" || !Array.isArray(e.opzioni) || e.opzioni.length<2) return e;
+    const ordine=shuffle(e.opzioni.map((op,j)=>j));
+    const corretta=ordine.indexOf(e.corretta);
+    if(corretta<0) return e;
+    return Object.assign({},e,{opzioni:ordine.map(j=>e.opzioni[j]),corretta});
+  });
+}
 function renderEsercizio(e,i){
   if(e.tipo==="scelta"){
     return `<div class="es" data-idx="${i}" data-tipo="scelta">
@@ -810,7 +822,7 @@ function renderLezione(lez){
 function attachLezioneHandlers(lez,dati){
   const c=lez.contenuto||{};
   const mazzo=[...(c.vocaboli||[]),...(c.frasi||[])];
-  const esercizi=lez.esercizi||[];
+  const esercizi=mescolaOpzioni(lez.esercizi||[]);
 
   document.querySelectorAll("[data-speak]").forEach(el=>{
     el.addEventListener("click",(ev)=>{ev.stopPropagation();parla(el.dataset.speak);
@@ -1141,7 +1153,7 @@ function attachRipassoHandlers(r){
     document.getElementById("ripasso-mazzo").innerHTML=creaFlashDeckHTML("ripasso",true);
     attachFlashDeck("ripasso",deck,{flag:true,comandoPrefix:"ERRORI ripasso"});
   }
-  const esercizi=c.esercizi||[];
+  const esercizi=mescolaOpzioni(c.esercizi||[]);
   const eswrap=document.getElementById("ex-wrap");
   const scoreEls={sc:document.getElementById("ex-sc"),sct:document.getElementById("ex-sct")};
   if(!esercizi.length){ eswrap.innerHTML=`<div class="vuoto">Non disponibili.</div>`; scoreEls.sct.textContent="su 0"; }
