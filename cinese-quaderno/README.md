@@ -33,17 +33,25 @@ Due aggiunte che il coreano non ha:
 
 ## Come si mette in piedi
 
-1. **Database.** Lanciare `supabase/migrations/20260918_schema_cinese.sql` sul progetto
-   Supabase: crea lo schema `cinese` con `curriculum`, `lezioni`, `ripassi`,
-   `flashcard_stash` e le funzioni `sync_flashcard_stash` / `segna_flashcard`.
+Il progetto Supabase è lo stesso di tutti i quaderni: **il "tag lingua" è lo schema**.
+Accanto a `coreano` e `italiano` si aggiunge `cinese`, e l'app lo chiede a ogni
+richiesta con l'header `Accept-Profile: cinese`.
+
+1. **Database.** Lanciare `supabase/migrations/20260918_schema_cinese.sql`: crea lo
+   schema `cinese` con `curriculum`, `lezioni`, `ripassi`, `flashcard_stash` e le
+   funzioni `sync_flashcard_stash` / `segna_flashcard`, con le stesse colonne degli
+   schemi fratelli.
 2. **Esporre lo schema.** Su Supabase, *Settings → API → Exposed schemas*: aggiungere
-   `cinese`. Senza questo passaggio PostgREST rifiuta le richieste con
-   `Accept-Profile: cinese` e l'app mostra "Non riesco a raggiungere il quaderno".
-3. **Chiavi.** In cima allo `<script>` di `index.html` ci sono `SUPABASE_URL` e
-   `SUPABASE_ANON_KEY`. Sono quelle del progetto già usato dal quaderno di coreano: se
-   il cinese va su un altro progetto, vanno sostituite.
-4. **Pubblicazione.** GitHub Pages sul branch `main`, cartella radice. Il service worker
-   non fa cache: serve solo a rendere l'app installabile.
+   `cinese` all'elenco (`public, graphql_public, coreano, italiano`). Senza questo
+   passaggio PostgREST risponde `PGRST106 — Invalid schema: cinese` e l'app mostra
+   "Non riesco a raggiungere il quaderno".
+3. **Chiavi.** `SUPABASE_URL` e `SUPABASE_ANON_KEY`, in cima allo `<script>` di
+   `index.html`, sono già quelle del progetto condiviso: non c'è niente da cambiare.
+4. **Pubblicazione.** Ci pensa `.github/workflows/pages.yml`: a ogni push su `main`
+   accende GitHub Pages (`enablement: true`) e pubblica la radice del repository, quindi
+   non serve passare da *Settings → Pages*. Il sito finisce su
+   <https://dhanatos96.github.io/cinese-quaderno/>. Il service worker non fa cache:
+   serve solo a rendere l'app installabile.
 
 ## Forma dei dati
 

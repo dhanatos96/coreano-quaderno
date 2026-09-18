@@ -9,9 +9,14 @@
 --     cinese si scrive senza spazi e l'esercizio "Ricomponi la frase" non puo'
 --     ricavare le tessere spezzando il testo.
 --
--- Da lanciare una volta sola sul progetto Supabase. Ricordarsi poi di esporre
--- lo schema "cinese" in Settings -> API -> Exposed schemas, altrimenti PostgREST
--- rifiuta le richieste con Accept-Profile: cinese.
+-- Il "tag lingua" del quaderno e' lo schema stesso: sullo stesso progetto
+-- Supabase convivono gia' "coreano" e "italiano", e questo aggiunge "cinese".
+--
+-- Da lanciare una volta sola. Ricordarsi poi di esporre lo schema "cinese" in
+-- Settings -> API -> Exposed schemas (accanto a public, graphql_public, coreano,
+-- italiano), altrimenti PostgREST risponde
+--   PGRST106 "Invalid schema: cinese"
+-- alle richieste con Accept-Profile: cinese.
 -- ============================================================================
 
 create schema if not exists cinese;
@@ -19,13 +24,21 @@ create schema if not exists cinese;
 grant usage on schema cinese to anon, authenticated;
 
 -- ---------------------------------------------------------------- curriculum
+-- Stesse colonne di coreano.curriculum / italiano.curriculum: e' il programma
+-- del corso, una riga per argomento, che le lezioni poi spuntano.
 create table if not exists cinese.curriculum (
-  id          bigserial primary key,
-  livello     text not null check (livello in ('A1','A2','B1','B2','C1')),
-  titolo      text,
-  descrizione text,
-  created_at  timestamptz not null default now()
+  id             bigserial primary key,
+  tipo           text    not null check (tipo in ('GRAMMATICA','SITUAZIONE')),
+  blocco         text,
+  ordine         integer,
+  titolo         text    not null,
+  livello        text    not null check (livello in ('A1','A2','B1','B2','C1')),
+  completata     boolean not null default false,
+  lezione_numero integer
 );
+
+create index if not exists curriculum_ordine_idx  on cinese.curriculum (ordine);
+create index if not exists curriculum_livello_idx on cinese.curriculum (livello);
 
 -- ------------------------------------------------------------------ lezioni
 -- contenuto (jsonb):
@@ -53,6 +66,7 @@ create table if not exists cinese.lezioni (
   curriculum_id bigint references cinese.curriculum(id) on delete set null,
   contenuto     jsonb not null default '{}'::jsonb,
   esercizi      jsonb not null default '[]'::jsonb,
+  recall        jsonb not null default '{}'::jsonb,
   riepilogo     jsonb not null default '[]'::jsonb,
   created_at    timestamptz not null default now()
 );
@@ -61,7 +75,8 @@ create index if not exists lezioni_data_idx       on cinese.lezioni (data desc);
 create index if not exists lezioni_curriculum_idx on cinese.lezioni (curriculum_id);
 
 -- ------------------------------------------------------------------ ripassi
--- deck (jsonb):      [ {"n":1,"zh":"你好","py":"nǐ hǎo","it":"ciao"} ]
+-- deck (jsonb):      [ {"n":1,"card_n":3,"lezione_numero":1,
+--                       "zh":"你好","py":"nǐ hǎo","it":"ciao"} ]
 -- contenuto (jsonb): { "lezioni_ripassate":[...], "grammatica_coperta":[...],
 --                      "esercizi":[...], "riepilogo":[...] }
 create table if not exists cinese.ripassi (
