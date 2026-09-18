@@ -99,6 +99,11 @@ Le flashcard non si scrivono a mano: un trigger su `cinese.lezioni` riempie
 `cinese.flashcard_stash` a ogni inserimento o modifica di una lezione, senza mai
 toccare lo stato di studio delle carte già presenti.
 
+Sui permessi: `anon` può solo leggere le tabelle e chiamare l'unica RPC che le serve,
+`segna_flashcard`. `sync_flashcard_stash` e la funzione del trigger sono interne e
+l'`EXECUTE` che Postgres concede a `PUBLIC` per default viene revocato — altrimenti
+finirebbero raggiungibili su `/rest/v1/rpc/`, come succede oggi nello schema `coreano`.
+
 ## La voce
 
 L'app usa la sintesi vocale del telefono con `lang="zh-CN"`. Il tasto altoparlante in

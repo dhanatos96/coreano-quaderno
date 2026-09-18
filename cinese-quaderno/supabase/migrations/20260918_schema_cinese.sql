@@ -248,7 +248,17 @@ grant select on cinese.curriculum      to anon;
 grant select on cinese.lezioni         to anon;
 grant select on cinese.ripassi         to anon;
 grant select on cinese.flashcard_stash to anon;
-grant execute on function cinese.segna_flashcard(bigint, text) to anon;
+
+-- Postgres concede EXECUTE a PUBLIC su ogni nuova funzione: senza queste revoche
+-- sync_flashcard_stash e la funzione del trigger finirebbero esposte su
+-- /rest/v1/rpc/ appena lo schema viene aggiunto agli Exposed schemas (e' quello
+-- che succede oggi nello schema "coreano", dove il linter di Supabase le segnala).
+-- Sono funzioni interne: l'unica RPC che l'app deve poter chiamare e' segna_flashcard.
+revoke all on function cinese.sync_flashcard_stash(integer) from public, anon, authenticated;
+revoke all on function cinese.trg_lezioni_flashcard_stash() from public, anon, authenticated;
+revoke all on function cinese.segna_flashcard(bigint, text) from public;
+
+grant execute on function cinese.segna_flashcard(bigint, text) to anon, authenticated;
 
 -- Riallinea lo stash per le lezioni gia' presenti (no-op su schema vuoto).
 select cinese.sync_flashcard_stash(numero) from cinese.lezioni;
